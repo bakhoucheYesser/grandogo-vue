@@ -1,26 +1,22 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
-import router from '../router';
 import { ref, computed } from 'vue';
+import apiClient from '@/services/api';
+import toastService from '@/services/toast.service';
 import type { User, LoginCredentials, RegisterCredentials } from '../types/auth.types';
 
+// Updated interface to match actual backend response
 interface AuthResponse {
-  statusCode: number;
-  data: {
-    message: string;
-    user: User;
-  }
+  user: User;
+  message?: string;
 }
 
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
-});
+// Alternative response structure (in case backend sends nested data)
+interface AuthResponseNested {
+  data: {
+    user: User;
+    message?: string;
+  };
+}
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -45,71 +41,144 @@ export const useAuthStore = defineStore('auth', () => {
   // Actions
   async function login(credentials: LoginCredentials) {
     try {
-      const response = await api.post<AuthResponse>('/auth/login', {
+      console.log('🔐 Attempting login for:', credentials.email);
+
+      const response = await apiClient.post('/auth/login', {
         email: credentials.email,
         password: credentials.password
       });
 
-      // Set authentication data - Noter que la structure a changé
-      setAuthData(response.data);
+      console.log('✅ Login response:', response.data);
 
-      // Redirect based on user type
-      if (user.value) {
-        switch (user.value.userType) {
-          case 'admin':
-            router.push('/admin/dashboard');
-            break;
-          case 'provider':
-            router.push('/provider/dashboard');
-            break;
-          case 'customer':
-            router.push('/customer/dashboard');
-            break;
-          default:
-            router.push('/');
-        }
+      // Handle different response structures
+      let userData: User;
+
+      if (response.data.user) {
+        // Direct structure: {user: {...}}
+        userData = response.data.user;
+      } else if (response.data.data && response.data.data.user) {
+        // Nested structure: {data: {user: {...}}}
+        userData = response.data.data.user;
+      } else {
+        throw new Error('Invalid response structure: user data not found');
       }
 
+      // Set authentication data
+      setAuthData(userData);
+      toastService.success('Login successful!');
+
+      console.log('✅ Login successful for user:', userData.email);
+
       return response.data;
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (error: any) {
+      console.error('❌ Login error:', error);
+
+      let errorMessage = 'Login failed. Please try again.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      toastService.error(errorMessage);
       throw error;
     }
   }
 
   async function register(credentials: RegisterCredentials) {
     try {
-      const response = await api.post<AuthResponse>('/provider/register', {
+      console.log('📝 Attempting registration for:', credentials.email);
+
+      const response = await apiClient.post('/provider/register', {
         ...credentials
       });
 
-      setAuthData(response.data);
+      // Handle different response structures for registration too
+      let userData: User;
 
-      // Redirect to appropriate dashboard or onboarding
-      router.push('/onboarding');
+      if (response.data.user) {
+        userData = response.data.user;
+      } else if (response.data.data && response.data.data.user) {
+        userData = response.data.data.user;
+      } else {
+        throw new Error('Invalid response structure: user data not found');
+      }
+
+      setAuthData(userData);
+      toastService.success('Registration successful!');
+
+      console.log('✅ Registration successful for user:', userData.email);
 
       return response.data;
-    } catch (error) {
-      console.error('Registration error:', error);
+    } catch (error: any) {
+      console.error('❌ Registration error:', error);
+
+      let errorMessage = 'Registration failed. Please try again.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      toastService.error(errorMessage);
       throw error;
     }
   }
 
   async function refreshAccessToken() {
     try {
-      const response = await api.get<AuthResponse>('/auth/refresh');
-      setAuthData(response.data);
+      console.log('🔄 Refreshing authentication token');
+
+      const response = await apiClient.post('/auth/refresh');
+
+      // Handle different response structures
+      let userData: User;
+
+      if (response.data.user) {
+        userData = response.data.user;
+      } else if (response.data.data && response.data.data.user) {
+        userData = response.data.data.user;
+      } else {
+        throw new Error('Invalid response structure: user data not found');
+      }
+
+      setAuthData(userData);
+      console.log('✅ Token refreshed successfully');
       return response.data;
     } catch (error) {
-      // If refresh fails, logout the user
+      console.error('❌ Token refresh failed:', error);
+      logout();
+      throw error;
+    }
+  }
+
+  async function fetchCurrentUser() {
+    try {
+      console.log('👤 Fetching current user profile');
+
+      const response = await apiClient.get('/auth/me');
+
+      // Handle different response structures
+      let userData: User;
+
+      if (response.data.user) {
+        userData = response.data.user;
+      } else if (response.data.data && response.data.data.user) {
+        userData = response.data.data.user;
+      } else {
+        throw new Error('Invalid response structure: user data not found');
+      }
+
+      setAuthData(userData);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to fetch current user:', error);
       logout();
       throw error;
     }
   }
 
   function logout() {
-    // Appeler l'API pour se déconnecter
-    api.post('/auth/logout').catch(error => console.error('Logout error:', error));
+    // Call the API to logout
+    apiClient.post('/auth/logout').catch(error => console.error('Logout error:', error));
 
     // Clear authentication data
     user.value = null;
@@ -117,40 +186,15 @@ export const useAuthStore = defineStore('auth', () => {
     // Remove from local storage
     localStorage.removeItem('user');
 
-    // Redirect to login page
-    router.push('/login');
+    toastService.success('Logged out successfully');
+    console.log('🚪 User logged out');
   }
 
-  function setAuthData(data: AuthResponse) {
-    user.value = data.data.user;
-    localStorage.setItem('user', JSON.stringify(data.data.user));
+  function setAuthData(userData: User) {
+    user.value = userData;
+    localStorage.setItem('user', JSON.stringify(userData));
+    console.log('💾 Auth data saved for user:', userData.email);
   }
-
-  api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
-
-      // If token has expired and we haven't tried to refresh yet
-      if (error.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-
-        try {
-          // Attempt to refresh token
-          await refreshAccessToken();
-
-          // Retry the original request
-          return api(originalRequest);
-        } catch (refreshError) {
-          // If refresh fails, logout
-          logout();
-          return Promise.reject(refreshError);
-        }
-      }
-
-      return Promise.reject(error);
-    }
-  );
 
   return {
     // State
@@ -167,6 +211,7 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     refreshAccessToken,
+    fetchCurrentUser,
     setAuthData
   };
 });

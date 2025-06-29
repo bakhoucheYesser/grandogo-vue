@@ -11,12 +11,21 @@
                role="alert">
             {{ error }}
           </div>
+
+          <!-- Success Message -->
+          <div v-if="successMessage"
+               class="p-4 mb-4 text-sm text-green-600 rounded-lg bg-green-50"
+               role="alert">
+            {{ successMessage }}
+          </div>
+
           <!-- Email -->
           <div>
             <label for="email"
                    class="block mb-2 text-sm font-medium text-blue-700">Your email</label>
             <input type="email" id="email" v-model="email" required
-                   class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                   :disabled="loading"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:opacity-50"
                    placeholder="name@example.com">
           </div>
 
@@ -25,14 +34,15 @@
             <label for="password"
                    class="block mb-2 text-sm font-medium text-blue-700">Password</label>
             <input type="password" id="password" v-model="password" required
-                   class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                   :disabled="loading"
+                   class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 disabled:opacity-50"
                    placeholder="••••••••">
           </div>
 
           <!-- Submit -->
           <div class="flex justify-center">
             <button type="submit" :disabled="loading"
-                    class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 w-1/2">
+                    class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 shadow-lg font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 w-1/2 disabled:opacity-50 disabled:cursor-not-allowed">
               <span v-if="loading" class="inline-flex items-center">
                 <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
                      viewBox="0 0 24 24">
@@ -52,20 +62,22 @@
             <p class="mx-4 text-blue-600 text-center">or</p>
             <div class="flex-grow border-t border-gray-300"></div>
           </div>
+
           <!-- Google button -->
           <button type="button"
-                  class="flex items-center justify-center w-full py-4 mb-6 text-sm font-medium transition duration-300 rounded-2xl text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-blue-100">
-            <img class="h-5 mr-2"
+                  disabled
+                  class="flex items-center justify-center w-full py-4 mb-6 text-sm font-medium transition duration-300 rounded-2xl text-gray-400 bg-gray-100 cursor-not-allowed">
+            <img class="h-5 mr-2 opacity-50"
                  src="https://raw.githubusercontent.com/Loopple/loopple-public-assets/main/motion-tailwind/img/logos/logo-google.png"
                  alt="">
-            <span class="text-center">Sign in with Google</span>
+            <span class="text-center">Sign in with Google (Coming Soon)</span>
           </button>
 
           <!-- Footer -->
           <p class="text-sm font-light text-gray-600 text-center">
             Don't have an account yet?
-            <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">
-              Sign up
+            <router-link to="/become-driver" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">
+              Sign up as Driver
             </router-link>
           </p>
         </form>
@@ -74,12 +86,10 @@
   </section>
 </template>
 
-
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store.ts';
-
+import { useAuthStore } from '@/stores/auth.store';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -90,11 +100,13 @@ const email = ref<string>('');
 const password = ref<string>('');
 const loading = ref<boolean>(false);
 const error = ref<string>('');
+const successMessage = ref<string>('');
 
 // Form submission handler
 const handleSubmit = async (): Promise<void> => {
   try {
     error.value = '';
+    successMessage.value = '';
     loading.value = true;
 
     await authStore.login({
@@ -102,16 +114,26 @@ const handleSubmit = async (): Promise<void> => {
       password: password.value,
     });
 
-    // Redirect to the original requested page or home
-    const redirectPath = route.query.redirect as string || '/';
-    router.push(redirectPath);
-  } catch (err) {
+    // Show success message briefly
+    successMessage.value = 'Login successful! Redirecting...';
+
+    // Redirect after a short delay to show the success message
+    setTimeout(() => {
+      const redirectPath = route.query.redirect as string || '/';
+      console.log('🔄 Redirecting to:', redirectPath);
+      router.push(redirectPath);
+    }, 1000);
+
+  } catch (err: any) {
     console.error('Login error:', err);
+
     // Handle specific API error responses
-    if (err.response) {
-      error.value = err.response.data.message || 'Authentication failed. Please check your credentials.';
+    if (err.response?.data?.message) {
+      error.value = err.response.data.message;
+    } else if (err.message) {
+      error.value = err.message;
     } else {
-      error.value = 'Cannot connect to the server. Please try again later.';
+      error.value = 'Authentication failed. Please check your credentials.';
     }
   } finally {
     loading.value = false;
