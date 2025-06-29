@@ -4,7 +4,7 @@
       <div class="flex justify-between items-center py-2">
         <!-- Logo and tagline -->
         <div class="flex items-center space-x-2">
-          <router-link to="/" class="flex items-center"><span class=" text-base font-bold text-blue-600">On-demand movers</span></router-link>
+          <router-link to="/" class="flex items-center"><span class=" text-base font-bold text-black">On-demand movers</span></router-link>
 
         </div>
 
@@ -12,11 +12,9 @@
         <nav class="hidden md:flex space-x-6">
           <!-- Services dropdown -->
           <div class="relative" ref="dropdownRef">
-            <button @click="servicesOpen = !servicesOpen" class=" font-semibold text-blue-600 hover:text-blue-800 flex items-center">
-              Services
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
+            <button @click="servicesOpen = !servicesOpen" class="text-slate-800 hover:text-red-700 font-semibold text-base transition-colors duration-200">
+              SERVICES
+
             </button>
 
             <div
@@ -118,9 +116,24 @@
             </div>
           </div>
 
-          <router-link to="/estimate" class=" font-semibold text-blue-600 hover:text-blue-800">Get Estimate</router-link>
-          <router-link to="/cities" class=" font-semibold text-blue-600 hover:text-blue-800">Cities</router-link>
-          <router-link to="/become-driver" class=" font-semibold text-blue-600 hover:text-blue-800">Become a GrandoDriver</router-link>
+          <router-link
+            to="/estimate"
+            class="text-slate-800 hover:text-red-700 font-semibold text-base transition-colors duration-200"
+          >
+            GET ESTIMATE
+          </router-link>
+
+          <router-link
+            to="/cities"
+            class="text-slate-800 hover:text-red-700 font-semibold text-base transition-colors duration-200"          >
+            CITIES
+          </router-link>
+
+          <router-link
+            to="/become-driver"
+            class="text-slate-800 hover:text-red-700 font-semibold text-base transition-colors duration-200"          >
+            BECOME A GRANDODRIVER
+          </router-link>
         </nav>
 
         <!-- User authentication section -->
@@ -141,15 +154,16 @@
             </div>
           </template>
           <template v-else>
-            <div class="flex items-center gap-8">
-              <router-link to="/login" class=" font-semibold flex items-center gap-1 text-blue-600 hover:text-blue-800">
+            <div class="flex items-center gap-4">
+              <router-link to="/login" class=" font-semibold flex items-center gap-1 text-black hover:text-red-700">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" class="w-[16px] font-semibold ">
                   <path fill="currentColor" fill-rule="evenodd" d="M10 3.333a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m-4.167 2.5a4.167 4.167 0 1 1 8.334 0 4.167 4.167 0 0 1-8.334 0M5.07 16.667h9.862a5.001 5.001 0 0 0-9.862 0m-1.736.833a6.667 6.667 0 0 1 13.334 0c0 .46-.373.833-.834.833H4.167a.833.833 0 0 1-.834-.833" clip-rule="evenodd" />
                 </svg>
                 <span>Sign In</span>
               </router-link>
 
-              <router-link to="/register" class=" font-semibold btn-primary">Book Now</router-link>
+              <router-link to="/register"   class="text-white bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 shadow-lg shadow-red-500/50 dark:shadow-lg dark:shadow-red-800/80 font-medium rounded-lg text-sm  px-3.5 py-3 gap-x-4 flex-wrap justify-center"
+              >Book Now</router-link>
             </div>
           </template>
         </div>
@@ -197,7 +211,7 @@ const logout = async () => {
 
 <style scoped>
 .btn-primary {
-  @apply bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-3 py-1.5 rounded-md hover:bg-gradient-to-br focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 shadow-md transition-all duration-300;
+  @apply bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 shadow-lg shadow-red-500/50 dark:shadow-lg dark:shadow-red-800/80 font-medium rounded-lg text-sm w-full px-3.5 py-3 gap-x-4 flex-wrap justify-center;
 }
 
 [v-cloak] {

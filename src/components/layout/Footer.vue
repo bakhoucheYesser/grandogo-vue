@@ -1,7 +1,34 @@
 <template>
-  <footer class="bg-gradient-to-r from-blue-800 via-blue-900 to-blue-950 text-white py-12">
-    <div class="container mx-auto px-4">
+  <footer class=" py-12">
 
+    <!-- Newsletter Section -->
+    <section >
+
+      <div class="container mx-auto flex justify-center p-12">
+        <div class="space-y-4">
+          <div class="text-fluid-heading-1 font-bold text-5xl">Keep in touch</div>
+          <div class="text-paragraph-1 text-gray-600">Sign up for email announcements, deals, and more!</div>
+        </div>
+        <div>
+          <form class="flex flex-col justify-end gap-3 md:flex-row md:items-center">
+            <div class="flex-1 md:max-w-[21.875rem]">
+              <div class="relative border rounded-xl px-3.5 py-3 flex items-center gap-x-4 flex-wrap transition text-black bg-white border-gray-400 focus-within:border-black hover:border-black">
+                <input class="block w-full text-label-2 leading-[1.375] focus:outline-none flex-1 bg-transparent border-none focus:ring-0 placeholder:text-gray-600 text-black caret-black"
+                       type="email" placeholder="Email address..." name="email">
+              </div>
+            </div>
+            <div>
+              <button class="transition duration-150 active:translate-y-px ease-in-out cursor-pointer border inline-flex items-center justify-center font-book font-medium text-label-2 h-12 rounded-xl px-6 space-x-2 focus:ring-4 bg-brand hover:bg-brand-1250 ring-brand-special-100 text-red-600 border-red-600 w-full md:max-w-[17.5rem]">
+                <span>Subscribe</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    <div class="container mx-auto px-4 ">
+      <div class="border-t border-red-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+      </div>
       <div class="mx-auto w-full ">
         <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-y-8 p-6 xl:p-14 mx-auto max-w-screen-2xl">
           <div><h6 class="mb-1.5 text-fluid-heading-6 font-bold">Lugg</h6>
@@ -51,7 +78,7 @@
             </ul>
           </div>
           <div class="col-span-full flex flex-col items-start lg:col-span-2 lg:items-end">
-            <div class="space-y-4"><span class="text-l3 text-gray-500">Move anything, anywhere, anytime! <br> Download our app.</span>
+            <div class="space-y-4"><span class="text-l3 text-black">Move anything, anywhere, anytime! <br> Download our app.</span>
               <div class="flex space-x-4"><a
                 href="https://itunes.apple.com/app/apple-store/id919765207?pt=107386822&amp;ct=lugg.com&amp;mt=8">
                 <svg width="96" height="32" viewBox="0 0 96 32" fill="none"
@@ -145,23 +172,22 @@
               </a></div>
             </div>
           </div>
-          <div class="col-span-full grid grid-cols-1 items-center gap-y-4 lg:grid-cols-2">
-            <ul class="flex space-x-3">
-              <li class="mr-0 md:mr-4"><span class="text-label-3 text-black">Lugg © 2023</span></li>
-              <li><a class="text-label-3 text-gray-500" href="/privacy">Privacy</a></li>
-              <li><a class="text-label-3 text-gray-500" href="/terms">Terms</a></li>
-              <li><a class="text-label-3 text-gray-500" href="/sitemap.xml">Site map</a></li>
-            </ul>
 
-          </div>
         </div>
       </div>
 
-      <div class="border-t border-blue-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-        <div class="text-blue-200 mb-4 md:mb-0">
+      <div class="border-t border-red-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div class="text-red-900 mb-4 md:mb-0">
           &copy; {{ currentYear }} GrandoGo. All rights reserved.
         </div>
+        <div class="col-span-full grid grid-cols-1 items-center gap-y-4 ">
+          <ul class="flex space-x-3">
+            <li><a class="text-label-3 text-gray-500" href="/privacy">Privacy</a></li>
+            <li><a class="text-label-3 text-gray-500" href="/terms">Terms</a></li>
+            <li><a class="text-label-3 text-gray-500" href="/sitemap.xml">Site map</a></li>
+          </ul>
 
+        </div>
         <div>
           <ul class="flex items-center space-x-5 lg:justify-end">
             <li><a href="https://facebook.com/lugg">

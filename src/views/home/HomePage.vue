@@ -2,77 +2,84 @@
   <div class="mx-auto">
     <!-- Hero Section -->
     <section class="mx-auto">
-      <div class="flex max-w-screen-xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 p-4 rounded-lg">
-        <div class="mr-auto place-self-center col-span-6">
+      <div class="flex w-full max-w-7xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 p-4 rounded-lg">
+        <div class="w-full lg:w-3/4 xl:w-2/3 mr-auto place-self-center">
           <h1 class="max-w-2xl mb-4 text-4xl font-extrabold tracking-tight md:text-5xl xl:text-6xl">
-            Move <span class="text-blue-600/25">anything</span>
+            Move <span class="text-red-600/50">anything</span>
           </h1>
-          <p class="max-w-2xl mb-6 font-light text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
+          <p class="max-w-2xl mb-6 font-bold text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
             Fully insured. On your schedule. Arriving in as little as 30 minutes.
           </p>
 
-          <!-- Address Form -->
-          <form class="flex w-full items-center flex-col gap-y-3 md:flex-row md:gap-y-0 md:gap-x-4 lg:gap-x-6 mt-4">
-            <!-- Pickup Address Field -->
-            <div class="w-full flex-1 md:w-auto md:max-w-[18.75rem]">
-              <div class="relative">
-                <div class="relative border rounded-xl px-3.5 py-3 flex items-center gap-x-4 flex-wrap transition text-black bg-white border-gray-400 focus-within:border-black hover:border-black">
-                  <div class="pointer-events-none flex h-5 w-5 items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         stroke-width="1.5" stroke="currentColor" aria-hidden="true"
-                         class="w-4 h-4">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
-                    </svg>
-                  </div>
-                  <input class="block w-full text-label-2 leading-[1.375] focus:outline-none flex-1 bg-transparent border-none focus:ring-0 placeholder:text-gray-600 text-black caret-black"
-                         placeholder="Pickup address"
-                         type="text"
-                  />
-                </div>
-              </div>
-            </div>
+          <!-- Updated Address Form -->
+          <form class="w-full ">
+            <div class="flex items-center bg-white border-2 border-gray-300 rounded-2xl p-2 shadow-lg hover:border-gray-400 focus-within:border-red-500 transition-all duration-200">
 
-            <!-- Delivery Address Field -->
-            <div class="w-full flex-1 md:w-auto md:max-w-[18.75rem]">
-              <div class="relative">
-                <div class="relative border rounded-xl px-3.5 py-3 flex items-center gap-x-4 flex-wrap transition text-black bg-white border-gray-400 focus-within:border-black hover:border-black">
-                  <div class="pointer-events-none flex h-5 w-5 items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         stroke-width="1.5" stroke="currentColor" aria-hidden="true"
-                         class="w-4 h-4">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
-                    </svg>
-                  </div>
-                  <input class="block w-full text-label-2 leading-[1.375] focus:outline-none flex-1 bg-transparent border-none focus:ring-0 placeholder:text-gray-600 text-black caret-black"
-                         placeholder="Destination address"
-                         type="text"
-                  />
+              <!-- Pickup Address Field -->
+              <div class="flex-1 px-4 py-2">
+                <!-- Label and Icon on same line -->
+                <div class="flex items-center mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="2" stroke="currentColor"
+                       class="w-4 h-4 text-red-600 mr-2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
+                  </svg>
+                  <div class="text-xs font-medium text-red-600">Pick up from</div>
                 </div>
+                <!-- Input field -->
+                <input
+                  class="w-full text-base text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
+                  placeholder="Pickup address"
+                  type="text"
+                />
               </div>
-            </div>
 
-            <!-- Estimate Button -->
-            <div class="w-full flex-1 md:w-auto md:max-w-[13.5rem]">
-              <button
-                type="submit"
-                class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm w-full px-3.5 py-3 gap-x-4 flex-wrap justify-center"
-              >
-                Get an estimate
-              </button>
+              <!-- Divider -->
+              <div class="w-px h-12 bg-gray-300 mx-2"></div>
+
+              <!-- Delivery Address Field -->
+              <div class="flex-1 px-4 py-2">
+                <!-- Label and Icon on same line -->
+                <div class="flex items-center mb-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                       stroke-width="2" stroke="currentColor"
+                       class="w-4 h-4 text-red-600 mr-2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z"></path>
+                  </svg>
+                  <div class="text-xs font-medium text-red-600">Move to</div>
+                </div>
+                <!-- Input field -->
+                <input
+                  class="w-full text-base text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
+                  placeholder="Drop-off address"
+                  type="text"
+                />
+              </div>
+
+              <!-- Submit Button -->
+              <div class="ml-2">
+                <button
+                  type="submit"
+                  class="bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/40 focus:ring-4 focus:outline-none focus:ring-red-300 transition-all duration-200 whitespace-nowrap"
+                >
+                  See prices
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
     </section>
-
     <!-- Vehicles Section -->
     <section class="pt-4 pl-4 pr-4">
       <div class="flex flex-col">
         <div class="flex max-w-screen-xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 p-4 rounded-lg">
           <div class="mr-auto place-self-center col-span-6">
-            <h1 class="max-w-2xl mb-4 text-2xl font-semibold tracking-tight leading-none md:text-2xl xl:text-5xl da:text-white">
+            <h1 class="max-w-4xl mb-4 text-3xl font-semibold tracking-tight leading-none md:text-2xl xl:text-3xl da:text-white">
               A truck and movers for any occasion
             </h1>
           </div>
@@ -93,50 +100,52 @@
       </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="mb-16">
+    <!-- How It Works (Cool futuristic color palette) -->
+    <section class="mb-16 px-4 bg-red-600/10 border border-black backdrop-blur-md rounded-[20px] p-10">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">How it works</h2>
-        <p class="text-xl text-gray-600">Simple steps to get your things moved</p>
+        <h2 class="text-3xl font-bold text-red-500 font-orbitron uppercase mb-2 tracking-widest">How it works</h2>
+        <p class="text-xl text-black font-light">Simple steps to get your things moved</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center p-6 bg-white rounded-lg shadow-md">
-          <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="text-center p-6 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-transform hover:scale-105 duration-300">
+          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
-          <h3 class="text-xl font-semibold mb-2">1. Get an estimate</h3>
-          <p class="text-gray-600">Enter your pickup and delivery addresses to get an instant price estimate.</p>
+          <h3 class="text-lg font-bold uppercase text-red-800 font-orbitron mb-2">1. Get an estimate</h3>
+          <p class="text-sm text-black">Enter your pickup and delivery addresses to get an instant price estimate.</p>
         </div>
 
-        <div class="text-center p-6 bg-white rounded-lg shadow-md">
-          <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="text-center p-6 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-transform hover:scale-105 duration-300">
+          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 class="text-xl font-semibold mb-2">2. Schedule your move</h3>
-          <p class="text-gray-600">Pick a date and time that works for you. Same-day options available.</p>
+          <h3 class="text-lg font-bold uppercase text-red-800 font-orbitron mb-2">2. Schedule your move</h3>
+          <p class="text-sm text-black">Pick a date and time that works for you. Same-day options available.</p>
         </div>
 
-        <div class="text-center p-6 bg-white rounded-lg shadow-md">
-          <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="text-center p-6 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-transform hover:scale-105 duration-300">
+          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 class="text-xl font-semibold mb-2">3. Relax while we move</h3>
-          <p class="text-gray-600">Our professional movers will handle everything. Track your move in real-time.</p>
+          <h3 class="text-lg font-bold uppercase text-red-800 font-orbitron mb-2">3. Relax while we move</h3>
+          <p class="text-sm text-black">Our professional movers will handle everything. Track your move in real-time.</p>
         </div>
       </div>
     </section>
 
+
+
     <!-- Become a Truck Owner Section -->
     <section>
       <div class="container mx-auto flex justify-center p-12">
-        <div class="w-4/5 grid grid-cols-12 gap-4 p-8 bg-gradient-to-l from-blue-500 to-blue-700 rounded-2xl shadow-lg">
+        <div class="w-4/5 grid grid-cols-12 gap-4 p-8 bg-gradient-to-l from-red-500 to-red-700 rounded-2xl shadow-lg">
           <div class="col-span-12 md:col-span-8">
             <img alt="Become A Lugger"
                  :src="luggersloadingvan"
@@ -159,83 +168,63 @@
     </section>
 
     <!-- Vehicle Types Section -->
-    <section class="mb-16 px-4">
+    <section class="mb-16 px-4 bg-red-600/10 border border-black backdrop-blur-md rounded-[20px] p-10">
       <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">Our vehicles</h2>
-        <p class="text-xl text-gray-600">Choose the right size for your needs</p>
+        <h2 class="text-3xl font-bold text-red-600 font-orbitron uppercase tracking-widest mb-2">Our vehicles</h2>
+        <p class="text-xl text-gray-300">Choose the right size for your needs</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Pickup -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <div class="p-4 text-center">
-            <h3 class="font-semibold text-lg mb-1">Pickup</h3>
-            <p class="text-gray-600 text-sm mb-2">Perfect for smaller items</p>
-            <div class="text-2xl font-bold text-indigo-600 mb-2">From $40</div>
-            <p class="text-gray-500 text-xs">+ $1.50/min • $2.00/km</p>
-            <a href="{{ path('app_estimate') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 mt-4 block">Get estimate</a>
-          </div>
+        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
+          <img :src="pickup" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <h3 class="font-orbitron text-white text-lg uppercase mb-1">Pickup</h3>
+          <p class="text-gray-400 text-sm mb-2">Perfect for smaller items</p>
+          <div class="text-2xl font-bold text-red-500 mb-2">From $40</div>
+          <p class="text-gray-500 text-xs">+ $1.50/min • $2.00/km</p>
+          <a href="{{ path('app_estimate') }}"
+             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+            Get estimate
+          </a>
         </div>
 
         <!-- Van -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <div class="p-4 text-center">
-            <h3 class="font-semibold text-lg mb-1">Van</h3>
-            <p class="text-gray-600 text-sm mb-2">Good for medium loads</p>
-            <div class="text-2xl font-bold text-indigo-600 mb-2">From $50</div>
-            <p class="text-gray-500 text-xs">+ $1.75/min • $2.25/km</p>
-            <a href="{{ path('app_estimate') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 mt-4 block">Get estimate</a>
-          </div>
+        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
+          <img :src="van" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <h3 class="font-orbitron text-white text-lg uppercase mb-1">Van</h3>
+          <p class="text-gray-400 text-sm mb-2">Good for medium loads</p>
+          <div class="text-2xl font-bold text-red-500 mb-2">From $50</div>
+          <p class="text-gray-500 text-xs">+ $1.75/min • $2.25/km</p>
+          <a href="{{ path('app_estimate') }}"
+             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+            Get estimate
+          </a>
         </div>
 
         <!-- XL -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <div class="p-4 text-center">
-            <h3 class="font-semibold text-lg mb-1">XL</h3>
-            <p class="text-gray-600 text-sm mb-2">Ideal for larger items</p>
-            <div class="text-2xl font-bold text-indigo-600 mb-2">From $65</div>
-            <p class="text-gray-500 text-xs">+ $2.00/min • $2.50/km</p>
-            <a href="{{ path('app_estimate') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 mt-4 block">Get estimate</a>
-          </div>
+        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
+          <img :src="xl" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <h3 class="font-orbitron text-white text-lg uppercase mb-1">XL</h3>
+          <p class="text-gray-400 text-sm mb-2">Ideal for larger items</p>
+          <div class="text-2xl font-bold text-red-500 mb-2">From $65</div>
+          <p class="text-gray-500 text-xs">+ $2.00/min • $2.50/km</p>
+          <a href="{{ path('app_estimate') }}"
+             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-black font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+            Get estimate
+          </a>
         </div>
 
         <!-- Box Truck -->
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-          <div class="p-4 text-center">
-            <h3 class="font-semibold text-lg mb-1">Box Truck</h3>
-            <p class="text-gray-600 text-sm mb-2">For full moves</p>
-            <div class="text-2xl font-bold text-indigo-600 mb-2">From $85</div>
-            <p class="text-gray-500 text-xs">+ $2.50/min • $3.00/km</p>
-            <a href="{{ path('app_estimate') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 mt-4 block">Get estimate</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
-
-    <!-- Newsletter Section -->
-    <section >
-
-      <div class="container mx-auto flex justify-center p-12">
-        <div class="space-y-4">
-          <div class="text-fluid-heading-1 font-bold text-5xl">Keep in touch</div>
-          <div class="text-paragraph-1 text-gray-600">Sign up for email announcements, deals, and more!</div>
-        </div>
-        <div>
-          <form class="flex flex-col justify-end gap-3 md:flex-row md:items-center">
-            <div class="flex-1 md:max-w-[21.875rem]">
-              <div class="relative border rounded-xl px-3.5 py-3 flex items-center gap-x-4 flex-wrap transition text-black bg-white border-gray-400 focus-within:border-black hover:border-black">
-                <input class="block w-full text-label-2 leading-[1.375] focus:outline-none flex-1 bg-transparent border-none focus:ring-0 placeholder:text-gray-600 text-black caret-black"
-                       type="email" placeholder="Email address..." name="email">
-              </div>
-            </div>
-            <div>
-              <button class="transition duration-150 active:translate-y-px ease-in-out cursor-pointer border inline-flex items-center justify-center font-book font-medium text-label-2 h-12 rounded-xl px-6 space-x-2 focus:ring-4 bg-brand hover:bg-brand-1250 ring-brand-special-100 text-blue-600 border-blue-600 w-full md:max-w-[17.5rem]">
-                <span>Subscribe</span>
-              </button>
-            </div>
-          </form>
+        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
+          <img :src="box" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <h3 class="font-orbitron text-white text-lg uppercase mb-1">Box Truck</h3>
+          <p class="text-gray-400 text-sm mb-2">For full moves</p>
+          <div class="text-2xl font-bold text-red-500 mb-2">From $85</div>
+          <p class="text-gray-500 text-xs">+ $2.50/min • $3.00/km</p>
+          <a href="{{ path('app_estimate') }}"
+             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+            Get estimate
+          </a>
         </div>
       </div>
     </section>
@@ -301,12 +290,12 @@
       </div>
     </section>
 
-    <section class="bg-gradient-to-l from-blue-500 to-blue-700 rounded-xl p-8 md:p-12 text-center text-white">
+    <section class="bg-gradient-to-l from-red-700 to-red-900 rounded-xl p-8 md:p-12 text-center text-white">
       <h2 class="text-3xl font-bold mb-4">Ready to move with GrandoGo?</h2>
       <p class="text-xl mb-8 max-w-3xl mx-auto">Whether you're moving a single item or an entire apartment, we've got you covered. Get started today!</p>
       <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <a href="{{ path('app_estimate') }}" class="bg-white text-blue-700 px-6 py-3 rounded-md font-semibold hover:bg-gray-100">Get an estimate</a>
-        <a href="{{ path('app_register') }}" class="border border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700">Sign up</a>
+        <a href="{{ path('app_estimate') }}" class="bg-white text-red-700 px-6 py-3 rounded-md font-semibold hover:bg-gray-100">Get an estimate</a>
+        <a href="{{ path('app_register') }}" class="border border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-red-700">Sign up</a>
       </div>
     </section>
 
@@ -316,4 +305,9 @@
 <script setup lang="ts">
 import vehicleLineupImage from '@/assets/images/illustrations/vehicle-lineup.svg';
 import luggersloadingvan from '@/assets/images/illustrations/luggers-loading-van.svg';
+import pickup from '@/assets/images/illustrations/pickup_truck.svg';
+import van from '@/assets/images/illustrations/van_truck.svg';
+import xl from '@/assets/images/illustrations/xl_truck.svg';
+import box from '@/assets/images/illustrations/box_truck.svg';
+
 </script>

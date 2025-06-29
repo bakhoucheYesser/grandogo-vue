@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-50">
+  <div class="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-700">
     <!-- Navbar -->
     <Navbar v-if="!hideNavbar" />
 
