@@ -8,7 +8,8 @@ const authRoutes: RouteRecordRaw[] = [
     component: () => import('../../views/auth/LoginPage.vue'),
     meta: {
       guestOnly: true,
-      layout: 'GuestLayout'
+      layout: 'MainLayout', // Use MainLayout to show navbar and footer
+      title: 'Sign In'
     }
   },
   {
@@ -17,7 +18,8 @@ const authRoutes: RouteRecordRaw[] = [
     component: () => import('../../views/auth/ProviderRegistration.vue'),
     meta: {
       guestOnly: true,
-      layout: 'GuestLayout'
+      layout: 'MainLayout', // Use MainLayout to show navbar and footer
+      title: 'Become a Driver'
     }
   }
 ];

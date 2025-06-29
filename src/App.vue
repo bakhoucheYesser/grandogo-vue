@@ -1,8 +1,9 @@
 <template>
-  <MainLayout>
+  <!-- Use the computed layout component dynamically -->
+  <component :is="layout">
     <router-view />
-  </MainLayout>
-  <!-- Add ToastContainer here, outside of MainLayout so it's always visible -->
+  </component>
+  <!-- Add ToastContainer here, outside of layouts so it's always visible -->
   <ToastContainer />
 </template>
 
@@ -21,6 +22,7 @@ const route = useRoute()
 const layouts = {
   DefaultLayout: markRaw(DefaultLayout),
   GuestLayout: markRaw(GuestLayout),
+  MainLayout: markRaw(MainLayout), // Add MainLayout support
 }
 
 const authStore = useAuthStore()
@@ -30,15 +32,19 @@ type LayoutName = keyof typeof layouts
 
 // Determine layout based on route metadata
 const layout = computed(() => {
-  // Cast the layoutName to LayoutName if it exists in layouts, otherwise use 'DefaultLayout'
-  const layoutName = (route.meta.layout as string) || 'DefaultLayout'
+  // Get the layout name from route metadata, default to MainLayout
+  const layoutName = (route.meta.layout as string) || 'MainLayout'
+
+  console.log(`🎨 Current route: ${route.path}`)
+  console.log(`🎨 Layout requested: ${layoutName}`)
 
   // Check if the layoutName is a valid key in layouts
   if (layoutName in layouts) {
     return layouts[layoutName as LayoutName]
   }
 
-  // Fallback to DefaultLayout
-  return layouts.DefaultLayout
+  // Fallback to MainLayout (navbar + footer, no sidebar)
+  console.log('🎨 Using fallback MainLayout')
+  return layouts.MainLayout
 })
 </script>

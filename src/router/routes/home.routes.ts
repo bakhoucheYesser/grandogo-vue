@@ -8,7 +8,7 @@ const homeRoutes: RouteRecordRaw[] = [
     component: () => import('../../views/home/HomePage.vue'),
     meta: {
       requiresAuth: false,
-      layout: 'DefaultLayout', // This should use DefaultLayout (with navbar/footer)
+      layout: 'MainLayout', // Use MainLayout (navbar + footer, no sidebar)
       title: 'Home'
     }
   },
@@ -18,7 +18,7 @@ const homeRoutes: RouteRecordRaw[] = [
     component: () => import('../../views/dashboard/DashboardPage.vue'), // Create this if it doesn't exist
     meta: {
       requiresAuth: true,
-      layout: 'DefaultLayout',
+      layout: 'DefaultLayout', // Use DefaultLayout for authenticated pages (with sidebar)
       title: 'Dashboard'
     }
   }
