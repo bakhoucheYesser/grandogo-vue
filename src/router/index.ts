@@ -4,10 +4,12 @@ import type { RouteRecordRaw } from 'vue-router';
 import { authGuard } from './guards';
 import authRoutes from './routes/auth.routes';
 import homeRoutes from './routes/home.routes';
+import estimateRoutes from './routes/estimate.routes'; // Add this import
 
 const routes: RouteRecordRaw[] = [
   ...authRoutes,
   ...homeRoutes,
+  ...estimateRoutes, // Add estimate routes
   { path: '/:pathMatch(.*)*', redirect: { name: 'home' } }
 ];
 

@@ -8,8 +8,10 @@ const estimateRoutes: RouteRecordRaw[] = [
     component: () => import('../../views/estimate/EstimatePage.vue'),
     meta: {
       requiresAuth: false,
-      layout: 'DefaultLayout',
+      layout: 'MainLayout', // Changed from DefaultLayout to MainLayout
       title: 'Get an Estimate'
     }
   }
 ];
+
+export default estimateRoutes;
