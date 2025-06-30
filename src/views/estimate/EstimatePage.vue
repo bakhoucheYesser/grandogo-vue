@@ -1,332 +1,582 @@
+<!-- src/views/estimate/EstimatePage.vue -->
 <template>
-  <div class="mx-auto">
-    <!-- Hero Section -->
-    <section class="mx-auto">
-      <div class="flex w-full max-w-7xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 p-4 rounded-lg">
-        <div class="w-full lg:w-3/4 xl:w-2/3 mr-auto place-self-center">
-          <h1 class="max-w-2xl mb-4 text-4xl font-extrabold tracking-tight md:text-5xl xl:text-6xl">
-            Move <span class="text-red-600/50">anything</span>
-          </h1>
-          <p class="max-w-2xl mb-6 font-bold text-gray-500 lg:mb-8 md:text-lg lg:text-xl dark:text-gray-400">
-            Fully insured. On your schedule. Arriving in as little as 30 minutes.
-          </p>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Main Content Container -->
+    <div class="relative">
+      <!-- Hero Section with Map Background -->
+      <div class="relative h-screen bg-cover bg-center" style="background-image: url('/api/placeholder/1200/800');">
+        <!-- Map Container (will be replaced with actual map) -->
+        <div ref="mapContainer" class="absolute inset-0">
+          <HereMap
+            ref="mapRef"
+            :pickup="selectedPickup"
+            :destination="selectedDestination"
+            :api-key="hereApiKey"
+            class="w-full h-full"
+          />
+        </div>
 
-          <!-- Updated Address Form -->
-          <form class="w-full" @submit.prevent="goToEstimate">
-            <div class="flex items-center bg-white border-2 border-gray-300 rounded-2xl p-2 shadow-lg hover:border-gray-400 focus-within:border-red-500 transition-all duration-200">
+        <!-- Overlay Content -->
+        <div class="absolute inset-0 bg-black bg-opacity-20">
+          <div class="container mx-auto px-4 py-8 h-full flex flex-col justify-center">
 
-              <!-- Pickup Address Field -->
-              <div class="flex-1 px-4 py-2">
-                <!-- Label and Icon on same line -->
-                <div class="flex items-center mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke-width="2" stroke="currentColor"
-                       class="w-4 h-4 text-red-600 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
-                  </svg>
-                  <div class="text-xs font-medium text-red-600">Pick up from</div>
+            <!-- Title -->
+            <div class="text-center mb-8">
+              <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">
+                Get an estimate
+              </h1>
+              <p class="text-lg text-white opacity-90">
+                Enter your addresses to see your prices and schedule your Lugg
+              </p>
+            </div>
+
+            <!-- Address Input Form -->
+            <div class="max-w-4xl mx-auto w-full">
+              <div class="bg-white rounded-xl shadow-lg p-2 flex items-center gap-2">
+                <!-- Pickup Address -->
+                <div class="flex-1 relative">
+                  <div class="flex items-center px-4 py-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
+                    </svg>
+                    <div class="flex-1">
+                      <div class="text-xs text-gray-500 mb-1">Pick up from</div>
+                      <AddressAutocomplete
+                        ref="pickupRef"
+                        v-model="pickupAddress"
+                        type="pickup"
+                        placeholder="Pickup address"
+                        :user-location="userLocation"
+                        class="w-full"
+                        @address-selected="handlePickupSelected"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <!-- Input field -->
-                <input
-                  v-model="pickupAddress"
-                  class="w-full text-base text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                  placeholder="Pickup address"
-                  type="text"
-                />
-              </div>
 
-              <!-- Divider -->
-              <div class="w-px h-12 bg-gray-300 mx-2"></div>
+                <!-- Divider -->
+                <div class="w-px h-12 bg-gray-200"></div>
 
-              <!-- Delivery Address Field -->
-              <div class="flex-1 px-4 py-2">
-                <!-- Label and Icon on same line -->
-                <div class="flex items-center mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke-width="2" stroke="currentColor"
-                       class="w-4 h-4 text-red-600 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z"></path>
-                  </svg>
-                  <div class="text-xs font-medium text-red-600">Move to</div>
+                <!-- Destination Address -->
+                <div class="flex-1 relative">
+                  <div class="flex items-center px-4 py-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <div class="flex-1">
+                      <div class="text-xs text-gray-500 mb-1">Move to</div>
+                      <AddressAutocomplete
+                        ref="destinationRef"
+                        v-model="destinationAddress"
+                        type="destination"
+                        placeholder="Drop-off address"
+                        :user-location="userLocation"
+                        class="w-full"
+                        @address-selected="handleDestinationSelected"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <!-- Input field -->
-                <input
-                  v-model="dropoffAddress"
-                  class="w-full text-base text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                  placeholder="Drop-off address"
-                  type="text"
-                />
-              </div>
 
-              <!-- Submit Button -->
-              <div class="ml-2">
+                <!-- See Prices Button -->
                 <button
-                  type="submit"
-                  class="bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/40 focus:ring-4 focus:outline-none focus:ring-red-300 transition-all duration-200 whitespace-nowrap"
+                  @click="scrollToVehicles"
+                  :disabled="!canCalculatePrice"
+                  class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  See prices
+                  <svg v-if="isCalculatingRoute" class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span v-else>See prices</span>
                 </button>
               </div>
             </div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <!-- Vehicles Section -->
-    <section class="pt-4 pl-4 pr-4">
-      <div class="flex flex-col">
-        <div class="flex max-w-screen-xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12 p-4 rounded-lg">
-          <div class="mr-auto place-self-center col-span-6">
-            <h1 class="max-w-4xl mb-4 text-3xl font-semibold tracking-tight leading-none md:text-2xl xl:text-3xl da:text-white">
-              A truck and movers for any occasion
-            </h1>
           </div>
-          <div class="flex-1">
-            <div class="flex-1">
-              <img
-                alt="Vehicle Lineup"
-                :src="vehicleLineupImage"
-                width="960"
-                height="640"
-                decoding="async"
-                class="gradient-mask-become-a-lugger-alt md:gradient-mask-become-a-lugger h-full w-full object-cover md:max-w-[481px]"
-                loading="lazy"
-              />
-            </div>
+        </div>
+
+        <!-- Map markers overlay (when addresses are selected) -->
+        <div v-if="selectedPickup" class="absolute" :style="getMarkerPosition('pickup')">
+          <div class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+            Pickup
+          </div>
+        </div>
+        <div v-if="selectedDestination" class="absolute" :style="getMarkerPosition('destination')">
+          <div class="bg-red-800 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+            Drop-off
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- How It Works (Cool futuristic color palette) -->
-    <section class="mb-16 px-4 bg-red-600/10 border border-black backdrop-blur-md rounded-[20px] p-10">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-red-500 font-orbitron uppercase mb-2 tracking-widest">How it works</h2>
-        <p class="text-xl text-black font-light">Simple steps to get your things moved</p>
-      </div>
+      <!-- Vehicle Selection Section -->
+      <div v-if="canCalculatePrice" ref="vehicleSection" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center p-6 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-transform hover:scale-105 duration-300">
-          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
+          <!-- Vehicle Options Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+
+            <!-- Pickup Vehicle -->
+            <VehicleCard
+              :vehicle="vehicles.pickup"
+              :route-info="routeInfo"
+              :selected="selectedVehicle?.type === 'pickup'"
+              @select="selectVehicle(vehicles.pickup)"
+            />
+
+            <!-- Van Vehicle -->
+            <VehicleCard
+              :vehicle="vehicles.van"
+              :route-info="routeInfo"
+              :selected="selectedVehicle?.type === 'van'"
+              @select="selectVehicle(vehicles.van)"
+            />
+
+            <!-- XL Vehicle -->
+            <VehicleCard
+              :vehicle="vehicles.xl"
+              :route-info="routeInfo"
+              :selected="selectedVehicle?.type === 'xl'"
+              @select="selectVehicle(vehicles.xl)"
+            />
+
+            <!-- Box Vehicle -->
+            <VehicleCard
+              :vehicle="vehicles.box"
+              :route-info="routeInfo"
+              :selected="selectedVehicle?.type === 'box'"
+              @select="selectVehicle(vehicles.box)"
+            />
           </div>
-          <h3 class="text-lg font-bold uppercase text-red-800 font-orbitron mb-2">1. Get an estimate</h3>
-          <p class="text-sm text-black">Enter your pickup and delivery addresses to get an instant price estimate.</p>
-        </div>
 
-        <div class="text-center p-6 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-transform hover:scale-105 duration-300">
-          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold uppercase text-red-800 font-orbitron mb-2">2. Schedule your move</h3>
-          <p class="text-sm text-black">Pick a date and time that works for you. Same-day options available.</p>
-        </div>
-
-        <div class="text-center p-6 rounded-[16px] border border-white/10 bg-white/5 backdrop-blur-sm transition-transform hover:scale-105 duration-300">
-          <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold uppercase text-red-800 font-orbitron mb-2">3. Relax while we move</h3>
-          <p class="text-sm text-black">Our professional movers will handle everything. Track your move in real-time.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Become a Truck Owner Section -->
-    <section>
-      <div class="container mx-auto flex justify-center p-12">
-        <div class="w-4/5 grid grid-cols-12 gap-4 p-8 bg-gradient-to-l from-red-500 to-red-700 rounded-2xl shadow-lg">
-          <div class="col-span-12 md:col-span-8">
-            <img alt="Become A Driver"
-                 :src="luggersloadingvan"
-                 width="960" height="640" decoding="async" data-nimg="1"
-                 class="gradient-mask-become-a-lugger-alt md:gradient-mask-become-a-lugger h-full w-full object-cover md:max-w-[481px]"
-                 loading="lazy" style="color: transparent;">
-          </div>
-          <div class="flex flex-1 col-span-12 md:col-span-4 items-center justify-center p-fluid-16 md:items-start md:pl-fluid-16">
-            <div class="max-w-[25rem] space-y-6">
-              <div class="space-y-4">
-                <h2 class="text-fluid-heading-1 font-bold text-white text-2xl">Earn money with your truck</h2>
-                <p class="text-paragraph-1 text-gray-300">Be active, meet new people &amp; make up to $2,500 a week!</p>
+          <!-- Save Option -->
+          <div v-if="selectedVehicle && selectedVehicle.type !== 'pickup'" class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">Save 35% — Get 1 Lugger</h3>
+                <p class="text-blue-700">Get a single Lugger. Be ready to help if it's too heavy.</p>
               </div>
-              <router-link to="/become-driver"
-                           class="transition duration-150 active:translate-y-px ease-in-out cursor-pointer border inline-flex items-center justify-center font-book font-medium text-label-2 h-12 rounded-xl px-6 space-x-2 focus:ring-4 bg-transparent border border-white hover:border-white/50 ring-white/20 text-white hover:text-white/50 w-full md:max-w-[17.5rem]">
-                <span>Apply now</span>
-              </router-link>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-blue-600">${{ getSingleLuggerPrice() }}</div>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold mt-2">
+                  Continue
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Vehicle Types Section -->
-    <section class="mb-16 px-4 bg-red-600/10 border border-black backdrop-blur-md rounded-[20px] p-10">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-red-600 font-orbitron uppercase tracking-widest mb-2">Our vehicles</h2>
-        <p class="text-xl text-gray-300">Choose the right size for your needs</p>
-      </div>
+      <!-- Price Breakdown Section -->
+      <div v-if="selectedVehicle && routeInfo" class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+          <div class="max-w-2xl mx-auto">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Pickup -->
-        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="pickup" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
-          <h3 class="font-orbitron text-white text-lg uppercase mb-1">Pickup</h3>
-          <p class="text-gray-400 text-sm mb-2">Perfect for smaller items</p>
-          <div class="text-2xl font-bold text-red-500 mb-2">From $40</div>
-          <p class="text-gray-500 text-xs">+ $1.50/min • $2.00/km</p>
-          <router-link to="/estimate"
-                       class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
-            Get estimate
-          </router-link>
-        </div>
-
-        <!-- Van -->
-        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="van" alt="Van" class="w-24 h-16 mx-auto mb-4 object-contain" />
-          <h3 class="font-orbitron text-white text-lg uppercase mb-1">Van</h3>
-          <p class="text-gray-400 text-sm mb-2">Good for medium loads</p>
-          <div class="text-2xl font-bold text-red-500 mb-2">From $50</div>
-          <p class="text-gray-500 text-xs">+ $1.75/min • $2.25/km</p>
-          <router-link to="/estimate"
-                       class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
-            Get estimate
-          </router-link>
-        </div>
-
-        <!-- XL -->
-        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="xl" alt="XL Truck" class="w-24 h-16 mx-auto mb-4 object-contain" />
-          <h3 class="font-orbitron text-white text-lg uppercase mb-1">XL</h3>
-          <p class="text-gray-400 text-sm mb-2">Ideal for larger items</p>
-          <div class="text-2xl font-bold text-red-500 mb-2">From $65</div>
-          <p class="text-gray-500 text-xs">+ $2.00/min • $2.50/km</p>
-          <router-link to="/estimate"
-                       class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-black font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
-            Get estimate
-          </router-link>
-        </div>
-
-        <!-- Box Truck -->
-        <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="box" alt="Box Truck" class="w-24 h-16 mx-auto mb-4 object-contain" />
-          <h3 class="font-orbitron text-white text-lg uppercase mb-1">Box Truck</h3>
-          <p class="text-gray-400 text-sm mb-2">For full moves</p>
-          <div class="text-2xl font-bold text-red-500 mb-2">From $85</div>
-          <p class="text-gray-500 text-xs">+ $2.50/min • $3.00/km</p>
-          <router-link to="/estimate"
-                       class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
-            Get estimate
-          </router-link>
-        </div>
-      </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="mb-16 px-4 pt-8">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-2">What our customers say</h2>
-        <p class="text-xl text-gray-600">Thousands of happy movers</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Testimonial 1 -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <div class="flex items-center mb-4">
-            <div class="text-yellow-400 flex mr-2">
-              <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
+            <!-- Time Estimate Slider -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span class="text-sm text-gray-600">Few Items</span>
+                </div>
+                <div class="flex-1 mx-8">
+                  <div class="relative">
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-orange-500 h-2 rounded-full" style="width: 25%"></div>
+                    </div>
+                    <div class="absolute -top-1 bg-orange-500 w-4 h-4 rounded-full" style="left: 25%; transform: translateX(-50%)"></div>
+                  </div>
+                </div>
+                <div class="text-sm text-gray-600">Avg. 2 BR</div>
+              </div>
+              <div class="text-center">
+                <div class="text-3xl font-bold text-gray-900 mb-1">{{ estimatedTime }} min</div>
+                <div class="text-gray-600">Estimated time to load and unload your items.</div>
+              </div>
             </div>
-            <div class="text-gray-600">5.0</div>
-          </div>
-          <p class="text-gray-700 mb-4">"GrandoGo made my move so easy! The movers arrived on time and were very professional. Everything was moved safely and quickly. Will definitely use again!"</p>
-          <div class="font-semibold">Sarah M.</div>
-          <div class="text-gray-500 text-sm">Montreal, QC</div>
-        </div>
 
-        <!-- Testimonial 2 -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <div class="flex items-center mb-4">
-            <div class="text-yellow-400 flex mr-2">
-              <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-            </div>
-            <div class="text-gray-600">5.0</div>
-          </div>
-          <p class="text-gray-700 mb-4">"I needed to move a couch from IKEA and GrandoGo was perfect! I got the van within an hour, and the driver even helped me carry it up to my apartment. Great service!"</p>
-          <div class="font-semibold">Michael T.</div>
-          <div class="text-gray-500 text-sm">Toronto, ON</div>
-        </div>
+            <!-- Price Breakdown -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+              <h3 class="text-xl font-semibold text-gray-900 mb-6">Price Breakdown</h3>
 
-        <!-- Testimonial 3 -->
-        <div class="bg-white p-6 rounded-lg shadow-md">
-          <div class="flex items-center mb-4">
-            <div class="text-yellow-400 flex mr-2">
-              <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
+              <div class="space-y-4">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Base fare ({{ selectedVehicle.name }})</span>
+                  <span class="font-semibold">${{ selectedVehicle.basePrice.toFixed(2) }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Traveled miles ({{ formatDistance(routeInfo.summary.length) }})</span>
+                  <span class="font-semibold">${{ getMileageCost().toFixed(2) }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Labor fee ({{ estimatedTime }} mins)</span>
+                  <span class="font-semibold">${{ getLaborCost().toFixed(2) }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Booking Fee</span>
+                  <span class="font-semibold">${{ getBookingFee().toFixed(2) }}</span>
+                </div>
+
+                <div class="border-t pt-4">
+                  <div class="flex justify-between text-lg font-bold">
+                    <span>Total price (estimated)</span>
+                    <span class="text-2xl">${{ getTotalPrice().toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Important Notice -->
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-6">
+                <div class="flex items-start">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 19c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  <div>
+                    <p class="text-sm text-yellow-800 font-medium">This is only an estimate.</p>
+                    <p class="text-sm text-yellow-700">Final price may be higher based on actual labor time.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Continue Button -->
+              <button
+                @click="proceedToBooking"
+                class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-4 px-6 rounded-lg mt-6 transition-all duration-200"
+              >
+                Continue
+              </button>
             </div>
-            <div class="text-gray-600">4.8</div>
           </div>
-          <p class="text-gray-700 mb-4">"As a small business owner, I regularly need items delivered to clients. GrandoGo has become my go-to service. Reliable, affordable, and my customers love the tracking feature."</p>
-          <div class="font-semibold">Jennifer K.</div>
-          <div class="text-gray-500 text-sm">Vancouver, BC</div>
         </div>
       </div>
-    </section>
 
-    <!-- Call to Action Section -->
-    <section class="bg-gradient-to-l from-red-700 to-red-900 rounded-xl p-8 md:p-12 text-center text-white">
-      <h2 class="text-3xl font-bold mb-4">Ready to move with GrandoGo?</h2>
-      <p class="text-xl mb-8 max-w-3xl mx-auto">Whether you're moving a single item or an entire apartment, we've got you covered. Get started today!</p>
-      <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <router-link to="/estimate" class="bg-white text-red-700 px-6 py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors">
-          Get an estimate
-        </router-link>
-        <router-link to="/become-driver" class="border border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-red-700 transition-colors">
-          Sign up as Driver
-        </router-link>
+      <!-- Vehicle Information Section -->
+      <div class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">For all moves, big or small</h2>
+          </div>
+
+          <div class="space-y-12">
+            <!-- Lite Option -->
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                  Lite <span class="text-lg text-blue-600 font-normal">1 Lugger</span>
+                </h3>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                  Great for small, lightweight moves. Ideal for moving a few boxes, compact furniture, or when you only need one mover.
+                </p>
+              </div>
+              <div class="flex-shrink-0 ml-8">
+                <img src="/images/illustrations/pickup_truck.svg" alt="Lite vehicle" class="w-32 h-20 object-contain" />
+              </div>
+            </div>
+
+            <!-- Pickup Option -->
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                  Pickup <span class="text-lg text-blue-600 font-normal">2 Luggers</span>
+                </h3>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                  Great for a few medium-sized items or a small number of larger pieces. Good fit for a couch, an appliance, or several large boxes.
+                </p>
+              </div>
+              <div class="flex-shrink-0 ml-8">
+                <img src="/images/illustrations/pickup_truck.svg" alt="Pickup vehicle" class="w-32 h-20 object-contain" />
+              </div>
+            </div>
+
+            <!-- Van Option -->
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <h3 class="text-2xl font-bold text-gray-900 mb-2">
+                  Van <span class="text-lg text-blue-600 font-normal">2 Luggers</span>
+                </h3>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                  Great for medium to large moves. Perfect for moving multiple furniture pieces such as a living room or bedroom set.
+                </p>
+              </div>
+              <div class="flex-shrink-0 ml-8">
+                <img src="/images/illustrations/van_truck.svg" alt="Van vehicle" class="w-32 h-20 object-contain" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </section>
 
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import vehicleLineupImage from '@/assets/images/illustrations/vehicle-lineup.svg';
-import luggersloadingvan from '@/assets/images/illustrations/luggers-loading-van.svg';
-import pickup from '@/assets/images/illustrations/pickup_truck.svg';
-import van from '@/assets/images/illustrations/van_truck.svg';
-import xl from '@/assets/images/illustrations/xl_truck.svg';
-import box from '@/assets/images/illustrations/box_truck.svg';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import AddressAutocomplete from './components/AddressAutocomplete.vue';
+import HereMap from './components/HereMap.vue';
+import VehicleCard from './components/VehicleCard.vue';
+import autocompleteService from '@/services/autocomplete.service';
+import toastService from '@/services/toast.service';
+import type { PlaceResult, RouteResult, Location } from '@/types/address.types';
 
+// Router
+const route = useRoute();
 const router = useRouter();
+
+// Refs
+const pickupRef = ref<InstanceType<typeof AddressAutocomplete> | null>(null);
+const destinationRef = ref<InstanceType<typeof AddressAutocomplete> | null>(null);
+const mapRef = ref<InstanceType<typeof HereMap> | null>(null);
+const mapContainer = ref<HTMLElement | null>(null);
+const vehicleSection = ref<HTMLElement | null>(null);
+
+// Reactive state
 const pickupAddress = ref('');
-const dropoffAddress = ref('');
+const destinationAddress = ref('');
+const selectedPickup = ref<Location | null>(null);
+const selectedDestination = ref<Location | null>(null);
+const selectedVehicle = ref<any>(null);
+const userLocation = ref<{ lat: number; lng: number } | null>(null);
+const routeInfo = ref<RouteResult | null>(null);
+const isCalculatingRoute = ref(false);
+const estimatedTime = ref(30);
 
-const goToEstimate = () => {
-  // Navigate to estimate page, potentially with query params for addresses
-  const query: Record<string, string> = {};
-  if (pickupAddress.value) query.pickup = pickupAddress.value;
-  if (dropoffAddress.value) query.dropoff = dropoffAddress.value;
+// Environment variables
+const hereApiKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
 
-  router.push({
-    name: 'estimate',
-    query: Object.keys(query).length > 0 ? query : undefined
+// Vehicle definitions
+const vehicles = ref({
+  pickup: {
+    type: 'pickup',
+    name: 'Pickup',
+    description: '2 Luggers',
+    basePrice: 38.00,
+    perMinute: 1.62,
+    perMile: 2.24,
+    image: '/images/illustrations/pickup_truck.svg'
+  },
+  van: {
+    type: 'van',
+    name: 'Van',
+    description: '2 Luggers',
+    basePrice: 50.00,
+    perMinute: 1.62,
+    perMile: 2.24,
+    image: '/images/illustrations/van_truck.svg'
+  },
+  xl: {
+    type: 'xl',
+    name: 'XL',
+    description: '2 Luggers',
+    basePrice: 65.00,
+    perMinute: 1.62,
+    perMile: 2.24,
+    image: '/images/illustrations/xl_truck.svg'
+  },
+  box: {
+    type: 'box',
+    name: 'Box',
+    description: '2 Luggers',
+    basePrice: 85.00,
+    perMinute: 1.62,
+    perMile: 2.24,
+    image: '/images/illustrations/box_truck.svg'
+  }
+});
+
+// Computed
+const canCalculatePrice = computed(() => {
+  return selectedPickup.value && selectedDestination.value;
+});
+
+// Lifecycle
+onMounted(() => {
+  initializeFromQuery();
+  getCurrentLocation();
+});
+
+// Watch for address changes
+watch([selectedPickup, selectedDestination], () => {
+  if (selectedPickup.value && selectedDestination.value) {
+    calculateRoute();
+  } else {
+    routeInfo.value = null;
+  }
+}, { deep: true });
+
+// Methods
+const initializeFromQuery = () => {
+  if (route.query.pickup && typeof route.query.pickup === 'string') {
+    pickupAddress.value = route.query.pickup;
+  }
+  if (route.query.dropoff && typeof route.query.dropoff === 'string') {
+    destinationAddress.value = route.query.dropoff;
+  }
+};
+
+const getCurrentLocation = async () => {
+  if (userLocation.value) return;
+
+  try {
+    const location = await autocompleteService.getCurrentLocation();
+    if (location) {
+      userLocation.value = location;
+    }
+  } catch (error) {
+    console.warn('Failed to get user location:', error);
+  }
+};
+
+const handlePickupSelected = (address: PlaceResult) => {
+  selectedPickup.value = {
+    lat: address.position.lat,
+    lng: address.position.lng,
+    address: address.address.label
+  };
+};
+
+const handleDestinationSelected = (address: PlaceResult) => {
+  selectedDestination.value = {
+    lat: address.position.lat,
+    lng: address.position.lng,
+    address: address.address.label
+  };
+};
+
+const calculateRoute = async () => {
+  if (!selectedPickup.value || !selectedDestination.value || isCalculatingRoute.value) return;
+
+  try {
+    isCalculatingRoute.value = true;
+
+    const route = await autocompleteService.calculateRoute(
+      selectedPickup.value,
+      selectedDestination.value
+    );
+
+    if (route) {
+      routeInfo.value = route;
+    }
+  } catch (error) {
+    console.error('Route calculation failed:', error);
+    toastService.error('Failed to calculate route');
+  } finally {
+    isCalculatingRoute.value = false;
+  }
+};
+
+const scrollToVehicles = () => {
+  if (!canCalculatePrice.value) {
+    toastService.warning('Please enter both pickup and destination addresses');
+    return;
+  }
+
+  nextTick(() => {
+    vehicleSection.value?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
   });
 };
+
+const selectVehicle = (vehicle: any) => {
+  selectedVehicle.value = vehicle;
+};
+
+const getMarkerPosition = (type: 'pickup' | 'destination') => {
+  // This would calculate the actual position based on map coordinates
+  // For now, return approximate positions
+  if (type === 'pickup') {
+    return { top: '40%', left: '20%' };
+  } else {
+    return { top: '60%', right: '20%' };
+  }
+};
+
+const getSingleLuggerPrice = () => {
+  if (!selectedVehicle.value || !routeInfo.value) return '0';
+  const total = getTotalPrice();
+  return Math.ceil(total * 0.65).toFixed(2);
+};
+
+const getMileageCost = () => {
+  if (!selectedVehicle.value || !routeInfo.value) return 0;
+  const miles = routeInfo.value.summary.length * 0.000621371; // Convert meters to miles
+  return miles * selectedVehicle.value.perMile;
+};
+
+const getLaborCost = () => {
+  if (!selectedVehicle.value) return 0;
+  return estimatedTime.value * selectedVehicle.value.perMinute;
+};
+
+const getBookingFee = () => {
+  if (!selectedVehicle.value || !routeInfo.value) return 0;
+  const subtotal = selectedVehicle.value.basePrice + getMileageCost() + getLaborCost();
+  return subtotal * 0.06; // 6% booking fee
+};
+
+const getTotalPrice = () => {
+  if (!selectedVehicle.value || !routeInfo.value) return 0;
+  return selectedVehicle.value.basePrice + getMileageCost() + getLaborCost() + getBookingFee();
+};
+
+const formatDistance = (meters: number): string => {
+  return autocompleteService.formatDistance(meters);
+};
+
+const proceedToBooking = () => {
+  toastService.success('Booking feature coming soon!');
+};
 </script>
+
+<style scoped>
+/* Custom styles for the Lugg-style estimate page */
+.vehicle-section {
+  scroll-margin-top: 2rem;
+}
+
+/* Ensure the map takes full height */
+.map-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Address input styling */
+:deep(.address-input) {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+:deep(.address-input::placeholder) {
+  color: #9CA3AF;
+  font-weight: normal;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-content {
+    padding: 2rem 1rem;
+  }
+
+  .address-form {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .address-form .divider {
+    display: none;
+  }
+}
+</style>
