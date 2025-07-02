@@ -1,16 +1,16 @@
-<!-- src/views/estimate/EstimatePage.vue -->
+<!-- src/views/estimate/EstimatePage.vue - VERSION AMÉLIORÉE -->
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Main Content Container -->
     <div class="relative">
       <!-- Hero Section with Map Background -->
-      <div class="relative h-screen bg-cover bg-center" style="background-image: url('/api/placeholder/1200/800');">
-        <!-- Map Container (will be replaced with actual map) -->
+      <div class="relative h-screen bg-cover bg-center">
+        <!-- Map Container -->
         <div ref="mapContainer" class="absolute inset-0">
           <HereMap
             ref="mapRef"
-            :pickup="selectedPickup"
-            :destination="selectedDestination"
+            :pickup="pickupLocation"
+            :destination="destinationLocation"
             :api-key="hereApiKey"
             class="w-full h-full"
           />
@@ -26,8 +26,13 @@
                 Get an estimate
               </h1>
               <p class="text-lg text-white opacity-90">
-                Enter your addresses to see your prices and schedule your Lugg
+                Enter your addresses to see your prices and schedule your move
               </p>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="max-w-4xl mx-auto w-full mb-4">
+              <EstimateProgress :progress="estimateProgress" />
             </div>
 
             <!-- Address Input Form -->
@@ -79,96 +84,74 @@
                   </div>
                 </div>
 
-                <!-- See Prices Button -->
+                <!-- Action Button -->
                 <button
+                  v-if="!canCalculateEstimate"
                   @click="scrollToVehicles"
-                  :disabled="!canCalculatePrice"
+                  :disabled="!pickupLocation || !destinationLocation"
                   class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
-                  <svg v-if="isCalculatingRoute" class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  See vehicles
+                </button>
+
+                <button
+                  v-else
+                  @click="handleCalculateEstimate"
+                  :disabled="isCalculating"
+                  class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-8 py-4 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <svg v-if="isCalculating" class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span v-else>See prices</span>
+                  <span v-else>Calculate price</span>
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Map markers overlay (when addresses are selected) -->
-        <div v-if="selectedPickup" class="absolute" :style="getMarkerPosition('pickup')">
-          <div class="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-            Pickup
-          </div>
-        </div>
-        <div v-if="selectedDestination" class="absolute" :style="getMarkerPosition('destination')">
-          <div class="bg-red-800 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-            Drop-off
+              <!-- Status Message -->
+              <div class="text-center mt-4">
+                <p class="text-white text-sm">{{ estimateStatusText }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Vehicle Selection Section -->
-      <div v-if="canCalculatePrice" ref="vehicleSection" class="py-16 bg-white">
+      <div v-if="pickupLocation && destinationLocation" ref="vehicleSection" class="py-16 bg-white">
         <div class="container mx-auto px-4">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Choose your vehicle</h2>
+            <p class="text-gray-600">Select the right size for your move</p>
+          </div>
 
           <!-- Vehicle Options Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-
-            <!-- Pickup Vehicle -->
             <VehicleCard
-              :vehicle="vehicles.pickup"
-              :route-info="routeInfo"
-              :selected="selectedVehicle?.type === 'pickup'"
-              @select="selectVehicle(vehicles.pickup)"
-            />
-
-            <!-- Van Vehicle -->
-            <VehicleCard
-              :vehicle="vehicles.van"
-              :route-info="routeInfo"
-              :selected="selectedVehicle?.type === 'van'"
-              @select="selectVehicle(vehicles.van)"
-            />
-
-            <!-- XL Vehicle -->
-            <VehicleCard
-              :vehicle="vehicles.xl"
-              :route-info="routeInfo"
-              :selected="selectedVehicle?.type === 'xl'"
-              @select="selectVehicle(vehicles.xl)"
-            />
-
-            <!-- Box Vehicle -->
-            <VehicleCard
-              :vehicle="vehicles.box"
-              :route-info="routeInfo"
-              :selected="selectedVehicle?.type === 'box'"
-              @select="selectVehicle(vehicles.box)"
+              v-for="vehicle in availableVehicles"
+              :key="vehicle.id"
+              :vehicle="vehicle"
+              :route-info="currentEstimate?.route"
+              :selected="selectedVehicle?.id === vehicle.id"
+              @select="handleVehicleSelect(vehicle)"
             />
           </div>
 
-          <!-- Save Option -->
-          <div v-if="selectedVehicle && selectedVehicle.type !== 'pickup'" class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-lg font-semibold text-blue-900 mb-2">Save 35% — Get 1 Lugger</h3>
-                <p class="text-blue-700">Get a single Lugger. Be ready to help if it's too heavy.</p>
-              </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-blue-600">${{ getSingleLuggerPrice() }}</div>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold mt-2">
-                  Continue
-                </button>
-              </div>
+          <!-- Loading State -->
+          <div v-if="availableVehicles.length === 0" class="text-center py-12">
+            <div class="animate-spin h-8 w-8 mx-auto mb-4 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </div>
+            <p class="text-gray-500">Loading available vehicles...</p>
           </div>
         </div>
       </div>
 
       <!-- Price Breakdown Section -->
-      <div v-if="selectedVehicle && routeInfo" class="py-12 bg-gray-50">
+      <div v-if="currentEstimate" class="py-12 bg-gray-50">
         <div class="container mx-auto px-4">
           <div class="max-w-2xl mx-auto">
 
@@ -186,15 +169,23 @@
                 <div class="flex-1 mx-8">
                   <div class="relative">
                     <div class="w-full bg-gray-200 rounded-full h-2">
-                      <div class="bg-orange-500 h-2 rounded-full" style="width: 25%"></div>
+                      <div class="bg-orange-500 h-2 rounded-full" :style="{ width: `${(estimatedDuration / 120) * 100}%` }"></div>
                     </div>
-                    <div class="absolute -top-1 bg-orange-500 w-4 h-4 rounded-full" style="left: 25%; transform: translateX(-50%)"></div>
+                    <input
+                      v-model="estimatedDuration"
+                      type="range"
+                      min="15"
+                      max="120"
+                      step="15"
+                      class="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
+                      @input="handleDurationChange"
+                    />
                   </div>
                 </div>
                 <div class="text-sm text-gray-600">Avg. 2 BR</div>
               </div>
               <div class="text-center">
-                <div class="text-3xl font-bold text-gray-900 mb-1">{{ estimatedTime }} min</div>
+                <div class="text-3xl font-bold text-gray-900 mb-1">{{ estimatedDuration }} min</div>
                 <div class="text-gray-600">Estimated time to load and unload your items.</div>
               </div>
             </div>
@@ -205,29 +196,29 @@
 
               <div class="space-y-4">
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Base fare ({{ selectedVehicle.name }})</span>
-                  <span class="font-semibold">${{ selectedVehicle.basePrice.toFixed(2) }}</span>
+                  <span class="text-gray-600">{{ currentEstimate.pricing.breakdown.basePrice }}</span>
+                  <span class="font-semibold">{{ formatPrice(currentEstimate.pricing.basePrice) }}</span>
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Traveled miles ({{ formatDistance(routeInfo.summary.length) }})</span>
-                  <span class="font-semibold">${{ getMileageCost().toFixed(2) }}</span>
+                  <span class="text-gray-600">{{ currentEstimate.pricing.breakdown.mileageCost }}</span>
+                  <span class="font-semibold">{{ formatPrice(currentEstimate.pricing.mileageCost) }}</span>
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Labor fee ({{ estimatedTime }} mins)</span>
-                  <span class="font-semibold">${{ getLaborCost().toFixed(2) }}</span>
+                  <span class="text-gray-600">{{ currentEstimate.pricing.breakdown.laborCost }}</span>
+                  <span class="font-semibold">{{ formatPrice(currentEstimate.pricing.laborCost) }}</span>
                 </div>
 
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Booking Fee</span>
-                  <span class="font-semibold">${{ getBookingFee().toFixed(2) }}</span>
+                  <span class="text-gray-600">{{ currentEstimate.pricing.breakdown.bookingFee }}</span>
+                  <span class="font-semibold">{{ formatPrice(currentEstimate.pricing.bookingFee) }}</span>
                 </div>
 
                 <div class="border-t pt-4">
                   <div class="flex justify-between text-lg font-bold">
                     <span>Total price (estimated)</span>
-                    <span class="text-2xl">${{ getTotalPrice().toFixed(2) }}</span>
+                    <span class="text-2xl">{{ formatPrice(currentEstimate.pricing.totalPrice) }}</span>
                   </div>
                 </div>
               </div>
@@ -245,91 +236,83 @@
                 </div>
               </div>
 
-              <!-- Continue Button -->
-              <button
-                @click="proceedToBooking"
-                class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-4 px-6 rounded-lg mt-6 transition-all duration-200"
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Vehicle Information Section -->
-      <div class="py-16 bg-white">
-        <div class="container mx-auto px-4">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">For all moves, big or small</h2>
-          </div>
-
-          <div class="space-y-12">
-            <!-- Lite Option -->
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                  Lite <span class="text-lg text-blue-600 font-normal">1 Lugger</span>
-                </h3>
-                <p class="text-gray-600 text-lg leading-relaxed">
-                  Great for small, lightweight moves. Ideal for moving a few boxes, compact furniture, or when you only need one mover.
-                </p>
-              </div>
-              <div class="flex-shrink-0 ml-8">
-                <img src="/images/illustrations/pickup_truck.svg" alt="Lite vehicle" class="w-32 h-20 object-contain" />
-              </div>
-            </div>
-
-            <!-- Pickup Option -->
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                  Pickup <span class="text-lg text-blue-600 font-normal">2 Luggers</span>
-                </h3>
-                <p class="text-gray-600 text-lg leading-relaxed">
-                  Great for a few medium-sized items or a small number of larger pieces. Good fit for a couch, an appliance, or several large boxes.
-                </p>
-              </div>
-              <div class="flex-shrink-0 ml-8">
-                <img src="/images/illustrations/pickup_truck.svg" alt="Pickup vehicle" class="w-32 h-20 object-contain" />
-              </div>
-            </div>
-
-            <!-- Van Option -->
-            <div class="flex items-center justify-between">
-              <div class="flex-1">
-                <h3 class="text-2xl font-bold text-gray-900 mb-2">
-                  Van <span class="text-lg text-blue-600 font-normal">2 Luggers</span>
-                </h3>
-                <p class="text-gray-600 text-lg leading-relaxed">
-                  Great for medium to large moves. Perfect for moving multiple furniture pieces such as a living room or bedroom set.
-                </p>
-              </div>
-              <div class="flex-shrink-0 ml-8">
-                <img src="/images/illustrations/van_truck.svg" alt="Van vehicle" class="w-32 h-20 object-contain" />
+              <!-- Action Buttons -->
+              <div class="flex gap-4 mt-6">
+                <button
+                  @click="proceedToBooking"
+                  class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200"
+                >
+                  Continue to Booking
+                </button>
+                <button
+                  @click="handleSaveEstimate"
+                  class="px-6 py-4 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-all duration-200"
+                >
+                  Save Estimate
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- Error State -->
+      <div v-if="error" class="fixed bottom-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 max-w-sm">
+        <div class="flex items-start">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p class="text-sm text-red-800 font-medium">Error</p>
+            <p class="text-sm text-red-700">{{ error }}</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AddressAutocomplete from './components/AddressAutocomplete.vue';
 import HereMap from './components/HereMap.vue';
 import VehicleCard from './components/VehicleCard.vue';
+import EstimateProgress from '@/components/estimate/EstimateProgress.vue';
+import { useEstimate } from '@/composables/useEstimate';
 import autocompleteService from '@/services/autocomplete.service';
-import toastService from '@/services/toast.service';
-import type { PlaceResult, RouteResult, Location } from '@/types/address.types';
+import type { PlaceResult, Vehicle } from '@/types/estimate.types';
 
-// Router
+// Composables
 const route = useRoute();
 const router = useRouter();
+const {
+  // State
+  pickupLocation,
+  destinationLocation,
+  selectedVehicle,
+  estimatedDuration,
+  currentEstimate,
+  availableVehicles,
+  isCalculating,
+  error,
+
+  // Getters
+  canCalculateEstimate,
+  estimateProgress,
+  estimateStatusText,
+
+  // Actions
+  setPickupLocation,
+  setDestinationLocation,
+  setSelectedVehicle,
+  setEstimatedDuration,
+  calculateEstimate,
+  saveEstimate,
+
+  // Utilities
+  formatPrice,
+} = useEstimate();
 
 // Refs
 const pickupRef = ref<InstanceType<typeof AddressAutocomplete> | null>(null);
@@ -338,79 +321,19 @@ const mapRef = ref<InstanceType<typeof HereMap> | null>(null);
 const mapContainer = ref<HTMLElement | null>(null);
 const vehicleSection = ref<HTMLElement | null>(null);
 
-// Reactive state
+// Local state
 const pickupAddress = ref('');
 const destinationAddress = ref('');
-const selectedPickup = ref<Location | null>(null);
-const selectedDestination = ref<Location | null>(null);
-const selectedVehicle = ref<any>(null);
 const userLocation = ref<{ lat: number; lng: number } | null>(null);
-const routeInfo = ref<RouteResult | null>(null);
-const isCalculatingRoute = ref(false);
-const estimatedTime = ref(30);
 
 // Environment variables
 const hereApiKey = import.meta.env.VITE_HERE_MAPS_API_KEY;
-
-// Vehicle definitions
-const vehicles = ref({
-  pickup: {
-    type: 'pickup',
-    name: 'Pickup',
-    description: '2 Luggers',
-    basePrice: 38.00,
-    perMinute: 1.62,
-    perMile: 2.24,
-    image: '/images/illustrations/pickup_truck.svg'
-  },
-  van: {
-    type: 'van',
-    name: 'Van',
-    description: '2 Luggers',
-    basePrice: 50.00,
-    perMinute: 1.62,
-    perMile: 2.24,
-    image: '/images/illustrations/van_truck.svg'
-  },
-  xl: {
-    type: 'xl',
-    name: 'XL',
-    description: '2 Luggers',
-    basePrice: 65.00,
-    perMinute: 1.62,
-    perMile: 2.24,
-    image: '/images/illustrations/xl_truck.svg'
-  },
-  box: {
-    type: 'box',
-    name: 'Box',
-    description: '2 Luggers',
-    basePrice: 85.00,
-    perMinute: 1.62,
-    perMile: 2.24,
-    image: '/images/illustrations/box_truck.svg'
-  }
-});
-
-// Computed
-const canCalculatePrice = computed(() => {
-  return selectedPickup.value && selectedDestination.value;
-});
 
 // Lifecycle
 onMounted(() => {
   initializeFromQuery();
   getCurrentLocation();
 });
-
-// Watch for address changes
-watch([selectedPickup, selectedDestination], () => {
-  if (selectedPickup.value && selectedDestination.value) {
-    calculateRoute();
-  } else {
-    routeInfo.value = null;
-  }
-}, { deep: true });
 
 // Methods
 const initializeFromQuery = () => {
@@ -423,8 +346,6 @@ const initializeFromQuery = () => {
 };
 
 const getCurrentLocation = async () => {
-  if (userLocation.value) return;
-
   try {
     const location = await autocompleteService.getCurrentLocation();
     if (location) {
@@ -436,110 +357,76 @@ const getCurrentLocation = async () => {
 };
 
 const handlePickupSelected = (address: PlaceResult) => {
-  selectedPickup.value = {
+  setPickupLocation({
     lat: address.position.lat,
     lng: address.position.lng,
-    address: address.address.label
-  };
+    address: address.address.label,
+  });
 };
 
 const handleDestinationSelected = (address: PlaceResult) => {
-  selectedDestination.value = {
+  setDestinationLocation({
     lat: address.position.lat,
     lng: address.position.lng,
-    address: address.address.label
-  };
+    address: address.address.label,
+  });
 };
 
-const calculateRoute = async () => {
-  if (!selectedPickup.value || !selectedDestination.value || isCalculatingRoute.value) return;
+const handleVehicleSelect = (vehicle: Vehicle) => {
+  setSelectedVehicle(vehicle);
+};
 
+const handleCalculateEstimate = async () => {
   try {
-    isCalculatingRoute.value = true;
-
-    const route = await autocompleteService.calculateRoute(
-      selectedPickup.value,
-      selectedDestination.value
-    );
-
-    if (route) {
-      routeInfo.value = route;
-    }
+    await calculateEstimate();
+    // Scroll to results
+    nextTick(() => {
+      const resultsSection = document.querySelector('.bg-gray-50');
+      if (resultsSection) {
+        resultsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
   } catch (error) {
-    console.error('Route calculation failed:', error);
-    toastService.error('Failed to calculate route');
-  } finally {
-    isCalculatingRoute.value = false;
+    console.error('Failed to calculate estimate:', error);
   }
 };
 
+const handleDurationChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  setEstimatedDuration(parseInt(target.value));
+};
+
 const scrollToVehicles = () => {
-  if (!canCalculatePrice.value) {
-    toastService.warning('Please enter both pickup and destination addresses');
+  if (!pickupLocation.value || !destinationLocation.value) {
     return;
   }
 
   nextTick(() => {
     vehicleSection.value?.scrollIntoView({
       behavior: 'smooth',
-      block: 'start'
+      block: 'start',
     });
   });
 };
 
-const selectVehicle = (vehicle: any) => {
-  selectedVehicle.value = vehicle;
-};
-
-const getMarkerPosition = (type: 'pickup' | 'destination') => {
-  // This would calculate the actual position based on map coordinates
-  // For now, return approximate positions
-  if (type === 'pickup') {
-    return { top: '40%', left: '20%' };
-  } else {
-    return { top: '60%', right: '20%' };
+const handleSaveEstimate = async () => {
+  try {
+    await saveEstimate();
+    // Show success message
+  } catch (error) {
+    console.error('Failed to save estimate:', error);
   }
 };
 
-const getSingleLuggerPrice = () => {
-  if (!selectedVehicle.value || !routeInfo.value) return '0';
-  const total = getTotalPrice();
-  return Math.ceil(total * 0.65).toFixed(2);
-};
-
-const getMileageCost = () => {
-  if (!selectedVehicle.value || !routeInfo.value) return 0;
-  const miles = routeInfo.value.summary.length * 0.000621371; // Convert meters to miles
-  return miles * selectedVehicle.value.perMile;
-};
-
-const getLaborCost = () => {
-  if (!selectedVehicle.value) return 0;
-  return estimatedTime.value * selectedVehicle.value.perMinute;
-};
-
-const getBookingFee = () => {
-  if (!selectedVehicle.value || !routeInfo.value) return 0;
-  const subtotal = selectedVehicle.value.basePrice + getMileageCost() + getLaborCost();
-  return subtotal * 0.06; // 6% booking fee
-};
-
-const getTotalPrice = () => {
-  if (!selectedVehicle.value || !routeInfo.value) return 0;
-  return selectedVehicle.value.basePrice + getMileageCost() + getLaborCost() + getBookingFee();
-};
-
-const formatDistance = (meters: number): string => {
-  return autocompleteService.formatDistance(meters);
-};
-
 const proceedToBooking = () => {
-  toastService.success('Booking feature coming soon!');
+  // Future: Navigate to booking page
+  console.log('Proceeding to booking with estimate:', currentEstimate.value);
+  // router.push({ name: 'booking', params: { estimateId: currentEstimate.value.id } });
 };
 </script>
 
 <style scoped>
-/* Custom styles for the Lugg-style estimate page */
+/* Custom styles for the estimate page */
 .vehicle-section {
   scroll-margin-top: 2rem;
 }
@@ -548,35 +435,5 @@ const proceedToBooking = () => {
 .map-container {
   position: relative;
   overflow: hidden;
-}
-
-/* Address input styling */
-:deep(.address-input) {
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-:deep(.address-input::placeholder) {
-  color: #9CA3AF;
-  font-weight: normal;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .hero-content {
-    padding: 2rem 1rem;
-  }
-
-  .address-form {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .address-form .divider {
-    display: none;
-  }
 }
 </style>
