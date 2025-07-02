@@ -1,288 +1,116 @@
-// backend/src/services/here-geocoding.service.ts
-import axios, { AxiosInstance } from 'axios';
-import { config } from '../config';
-import { logger } from '../utils/logger';
+<!-- src/views/estimate/components/HereMap.vue -->
+<template>
+  <div ref="mapContainer" class="w-full h-full bg-gray-200" style="min-height: 400px;">
+    <!-- Map will be initialized here -->
+    <div v-if="!mapInitialized" class="w-full h-full flex items-center justify-center">
+      <div class="text-center p-8">
+        <div v-if="mapError" class="text-red-600">
+          <div class="text-4xl mb-4">⚠️</div>
+          <div class="text-lg font-semibold mb-2">Map Error</div>
+          <div class="text-sm">{{ mapError }}</div>
+        </div>
+        <div v-else class="text-gray-600">
+          <div class="text-4xl mb-4">🗺️</div>
+          <div class="text-lg font-semibold mb-2">Loading Map...</div>
+          <div class="text-sm">Initializing HERE Maps</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
-interface HereSearchParams {
-q: string;
-limit?: number;
-at?: string;
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { useHereMaps } from '@/composables/useHereMaps';
+import type { Location } from '@/types/address.types';
+
+interface Props {
+  pickup?: Location | null;
+  destination?: Location | null;
+  apiKey?: string;
 }
 
-interface HerePlace {
-id?: string;
-title: string;
-address?: {
-label?: string;
-countryCode?: string;
-city?: string;
-state?: string;
-county?: string;
-postalCode?: string;
-};
-position?: {
-lat: number;
-lng: number;
-};
-resultType?: string;
-distance?: number;
-}
-
-interface RouteResult {
-summary: {
-duration: number;
-length: number;
-};
-polyline?: string;
-sections?: any[];
-}
-
-export class HereGeocoding {
-private client: AxiosInstance;
-private apiKey: string;
-
-constructor() {
-this.apiKey = config.hereApiKey || '';
-
-if (!this.apiKey) {
-logger.warn('⚠️ HERE Maps API key not configured, using mock data');
-}
-
-this.client = axios.create({
-timeout: 10000,
-headers: {
-'Content-Type': 'application/json',
-},
+const props = withDefaults(defineProps<Props>(), {
+  pickup: null,
+  destination: null,
+  apiKey: ''
 });
 
-// Add request interceptor for logging
-this.client.interceptors.request.use(
-(config) => {
-logger.debug(`🌐 HERE API Request: ${config.method?.toUpperCase()} ${config.url}`);
-return config;
-},
-(error) => {
-logger.error('❌ HERE API Request Error:', error);
-return Promise.reject(error);
-}
-);
+// Use the HERE Maps composable
+const {
+  mapContainer,
+  mapInitialized,
+  mapError,
+  initializeMap,
+  addMarker,
+  drawRoute,
+  clearMap,
+  fitToCoordinates
+} = useHereMaps();
 
-// Add response interceptor for logging
-this.client.interceptors.response.use(
-(response) => {
-logger.debug(`✅ HERE API Response: ${response.status} ${response.config.url}`);
-return response;
-},
-(error) => {
-logger.error(`❌ HERE API Error: ${error.response?.status} ${error.config?.url}`, {
-status: error.response?.status,
-data: error.response?.data,
-message: error.message
-});
-return Promise.reject(error);
-}
-);
-}
+// Watch for pickup changes
+watch(
+  () => props.pickup,
+  (newPickup) => {
+    if (newPickup && mapInitialized.value) {
+      clearMap();
+      addMarker(newPickup, 'pickup');
 
-/**
-* Search for places using HERE Geocoding API
-*/
-async searchPlaces(params: HereSearchParams): Promise<HerePlace[]> {
-if (!this.apiKey) {
-throw new Error('HERE Maps API key not configured');
-}
-
-try {
-const searchParams = new URLSearchParams({
-apikey: this.apiKey,
-q: params.q,
-limit: (params.limit || 5).toString(),
-...(params.at && { at: params.at })
-});
-
-const response = await this.client.get(
-`https://geocode.search.hereapi.com/v1/geocode?${searchParams}`
-);
-
-if (response.data && response.data.items) {
-return response.data.items.map((item: any) => ({
-id: item.id,
-title: item.title,
-address: {
-label: item.address?.label,
-countryCode: item.address?.countryCode,
-city: item.address?.city,
-state: item.address?.state || item.address?.county,
-postalCode: item.address?.postalCode
-},
-position: {
-lat: item.position?.lat,
-lng: item.position?.lng
-},
-resultType: item.resultType,
-distance: item.distance
-}));
-}
-
-return [];
-} catch (error) {
-logger.error('❌ HERE Geocoding search failed:', error);
-throw error;
-}
-}
-
-/**
-* Calculate route between two points
-*/
-async calculateRoute(origin: string, destination: string): Promise<RouteResult | null> {
-if (!this.apiKey) {
-throw new Error('HERE Maps API key not configured');
-}
-
-try {
-const routeParams = new URLSearchParams({
-apikey: this.apiKey,
-transportMode: 'car',
-origin,
-destination,
-'return': 'summary,polyline'
-});
-
-const response = await this.client.get(
-`https://router.hereapi.com/v8/routes?${routeParams}`
-);
-
-if (response.data && response.data.routes && response.data.routes.length > 0) {
-const route = response.data.routes[0];
-
-return {
-summary: {
-duration: route.sections[0]?.summary?.duration || 0,
-length: route.sections[0]?.summary?.length || 0
-},
-polyline: route.sections[0]?.polyline || '',
-sections: route.sections || []
-};
-}
-
-return null;
-} catch (error) {
-logger.error('❌ HERE Routing failed:', error);
-throw error;
-}
-}
-
-/**
-* Reverse geocoding - get address from coordinates
-*/
-async reverseGeocode(lat: number, lng: number): Promise<HerePlace | null> {
-  if (!this.apiKey) {
-  throw new Error('HERE Maps API key not configured');
-  }
-
-  try {
-  const reverseParams = new URLSearchParams({
-  apikey: this.apiKey,
-  at: `${lat},${lng}`,
-  limit: '1'
-  });
-
-  const response = await this.client.get(
-  `https://revgeocode.search.hereapi.com/v1/revgeocode?${reverseParams}`
-  );
-
-  if (response.data && response.data.items && response.data.items.length > 0) {
-  const item = response.data.items[0];
-
-  return {
-  id: item.id,
-  title: item.title,
-  address: {
-  label: item.address?.label,
-  countryCode: item.address?.countryCode,
-  city: item.address?.city,
-  state: item.address?.state || item.address?.county,
-  postalCode: item.address?.postalCode
-  },
-  position: {
-  lat: item.position?.lat || lat,
-  lng: item.position?.lng || lng
-  },
-  resultType: item.resultType
-  };
-  }
-
-  return null;
-  } catch (error) {
-  logger.error('❌ HERE Reverse geocoding failed:', error);
-  throw error;
-  }
-  }
-
-  /**
-  * Get distance matrix between multiple points
-  */
-  async getDistanceMatrix(origins: string[], destinations: string[]): Promise<any> {
-    if (!this.apiKey) {
-    throw new Error('HERE Maps API key not configured');
+      if (props.destination) {
+        addMarker(props.destination, 'destination');
+        drawRoute(
+          `${newPickup.lat},${newPickup.lng}`,
+          `${props.destination.lat},${props.destination.lng}`
+        );
+      }
     }
+  }
+);
 
-    try {
-    const matrixParams = new URLSearchParams({
-    apikey: this.apiKey,
-    async: 'false',
-    regionDefinition: 'world'
-    });
-
-    // Add origins
-    origins.forEach((origin, index) => {
-    matrixParams.append(`origins[${index}][lat]`, origin.split(',')[0]);
-    matrixParams.append(`origins[${index}][lng]`, origin.split(',')[1]);
-    });
-
-    // Add destinations
-    destinations.forEach((destination, index) => {
-    matrixParams.append(`destinations[${index}][lat]`, destination.split(',')[0]);
-    matrixParams.append(`destinations[${index}][lng]`, destination.split(',')[1]);
-    });
-
-    const response = await this.client.get(
-    `https://matrix.router.hereapi.com/v8/matrix?${matrixParams}`
-    );
-
-    return response.data;
-    } catch (error) {
-    logger.error('❌ HERE Distance Matrix failed:', error);
-    throw error;
+// Watch for destination changes
+watch(
+  () => props.destination,
+  (newDestination) => {
+    if (newDestination && mapInitialized.value) {
+      if (props.pickup) {
+        clearMap();
+        addMarker(props.pickup, 'pickup');
+        addMarker(newDestination, 'destination');
+        drawRoute(
+          `${props.pickup.lat},${props.pickup.lng}`,
+          `${newDestination.lat},${newDestination.lng}`
+        );
+      } else {
+        addMarker(newDestination, 'destination');
+      }
     }
-    }
+  }
+);
 
-    /**
-    * Check if the service is available
-    */
-    async healthCheck(): Promise<boolean> {
-      if (!this.apiKey) {
-      return false;
-      }
+onMounted(async () => {
+  if (props.apiKey) {
+    await initializeMap(props.apiKey);
+  } else {
+    console.warn('HERE Maps API key not provided');
+    mapError.value = 'HERE Maps API key not configured';
+  }
+});
 
-      try {
-      const testParams = new URLSearchParams({
-      apikey: this.apiKey,
-      q: 'Montreal',
-      limit: '1'
-      });
+onUnmounted(() => {
+  // Cleanup if needed
+});
 
-      const response = await this.client.get(
-      `https://geocode.search.hereapi.com/v1/geocode?${testParams}`,
-      { timeout: 5000 }
-      );
+// Expose methods if needed
+defineExpose({
+  clearMap,
+  addMarker,
+  drawRoute
+});
+</script>
 
-      return response.status === 200;
-      } catch (error) {
-      logger.error('❌ HERE Maps health check failed:', error);
-      return false;
-      }
-      }
-      }
-
-      export default HereGeocoding;
+<style scoped>
+/* Map-specific styles */
+.map-container {
+  filter: grayscale(100%) contrast(1.3) brightness(0.9);
+}
+</style>
