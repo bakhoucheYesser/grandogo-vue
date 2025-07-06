@@ -6,22 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GrandoGo</title>
 
-  <!-- HERE Maps Scripts - Updated with latest versions -->
-  <script src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
-  <script src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
-  <script src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
-  <script src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+  <!-- HERE Maps Scripts - Version stable et compatibilité Worker corrigée -->
+  <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+  <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+  <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+  <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
 
-  <!-- Additional HERE Maps modules -->
+  <!-- HERE Maps CSS -->
   <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
-
-  <!-- Preload scripts for better performance -->
-  <link rel="preload" href="https://js.api.here.com/v3/3.1/mapsjs-core.js" as="script">
 
   <style>
       /* Ensure HERE Maps loads properly */
       .H_Map {
           background-color: #f3f4f6 !important;
+          width: 100% !important;
+          height: 100% !important;
+      }
+
+      /* Fix potential HERE Maps display issues */
+      .H_Map canvas {
+          width: 100% !important;
+          height: 100% !important;
       }
 
       /* Loading state styling */
@@ -43,10 +48,41 @@
               background-position: 20px 20px, 20px 30px, 30px 10px, 10px 20px;
           }
       }
+
+      /* Fix HERE Maps UI positioning */
+      .H_ui {
+          position: relative !important;
+      }
   </style>
 </head>
 <body>
 <div id="app"></div>
+
+<!-- HERE Maps initialization and debug script -->
 <script type="module" src="/src/main.ts"></script>
+
+<script>
+  // Debug HERE Maps loading
+  window.addEventListener('load', function() {
+    setTimeout(() => {
+      if (typeof H !== 'undefined') {
+        console.log('✅ HERE Maps SDK loaded successfully');
+        console.log('📋 Available HERE services:', {
+          core: typeof H.Map !== 'undefined',
+          service: typeof H.service !== 'undefined',
+          ui: typeof H.ui !== 'undefined',
+          mapevents: typeof H.mapevents !== 'undefined'
+        });
+      } else {
+        console.error('❌ HERE Maps SDK failed to load');
+      }
+    }, 1000);
+  });
+
+  // Prevent Worker-related errors
+  if (typeof SharedArrayBuffer === 'undefined') {
+    window.SharedArrayBuffer = ArrayBuffer;
+  }
+</script>
 </body>
 </html>

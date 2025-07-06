@@ -1,95 +1,263 @@
-<!-- src/views/estimate/components/HereMap.vue -->
 <template>
-  <div ref="mapContainer" class="w-full h-full bg-gray-200 relative">
-    <!-- Map will be initialized here -->
-    <div v-if="!mapInitialized && !mapError" class="w-full h-full flex items-center justify-center bg-gray-300">
-      <div class="text-center p-8">
-        <div class="animate-spin h-8 w-8 mx-auto mb-4 text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-        <div class="text-lg font-semibold text-gray-700 mb-2">Loading Map...</div>
-        <div class="text-sm text-gray-500">Initializing HERE Maps</div>
+  <div ref="mapContainer" class="w-full h-full bg-gray-100 relative overflow-hidden">
+    <!-- Loading State -->
+    <div v-if="!mapInitialized && !mapError && !showFallback"
+         class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 z-10">
+      <div class="text-center">
+        <div class="w-12 h-12 border-4 border-red-200 border-t-red-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <div class="text-sm font-medium text-gray-600">Loading Map...</div>
+        <div class="text-xs text-gray-500 mt-2">{{ loadingStatus }}</div>
       </div>
     </div>
 
-    <!-- Error state -->
-    <div v-if="mapError" class="w-full h-full flex items-center justify-center bg-gray-300">
-      <div class="text-center p-8">
-        <div class="text-4xl mb-4">🗺️</div>
-        <div class="text-lg font-semibold text-gray-700 mb-2">Map Unavailable</div>
-        <div class="text-sm text-gray-500 mb-4">{{ mapError }}</div>
+    <!-- Error State -->
+    <div v-if="mapError && !showFallback"
+         class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 z-10">
+      <div class="text-center p-6">
+        <div class="text-4xl mb-3">⚠️</div>
+        <div class="text-sm font-medium text-gray-700 mb-2">Map Error</div>
+        <div class="text-xs text-gray-500 mb-4 max-w-xs">{{ mapError }}</div>
         <button
-          @click="retryMapInitialization"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          @click="showFallback = true"
+          class="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors mr-2"
+        >
+          Use Fallback
+        </button>
+        <button
+          @click="retryInitialization"
+          class="px-4 py-2 bg-gray-500 text-white text-sm rounded-lg hover:bg-gray-600 transition-colors"
         >
           Retry
         </button>
       </div>
     </div>
 
-    <!-- Fallback static map placeholder -->
-    <div v-if="showFallback" class="w-full h-full bg-gradient-to-br from-blue-100 to-green-100 flex items-center justify-center">
-      <div class="text-center p-8">
-        <div class="text-6xl mb-4">🗺️</div>
-        <div class="text-xl font-semibold text-gray-700 mb-2">Interactive Map</div>
-        <div class="text-sm text-gray-600 mb-4">Your route will be displayed here</div>
-        <div v-if="pickup && destination" class="text-xs text-gray-500">
-          <div>📍 {{ pickup.address || 'Pickup location' }}</div>
-          <div class="my-2">⬇️</div>
-          <div>🎯 {{ destination.address || 'Destination' }}</div>
+    <!-- Fallback Map avec Markers Visuels -->
+    <div v-if="showFallback"
+         class="absolute inset-0 bg-gradient-to-br from-green-100 via-blue-50 to-green-100 overflow-hidden">
+
+      <!-- Grille de fond simulant une carte -->
+      <div class="absolute inset-0 opacity-20">
+        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#94a3b8" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100" height="100" fill="url(#grid)" />
+
+          <!-- Routes simulées -->
+          <path d="M10,20 Q30,40 50,30 T90,45" stroke="#6b7280" stroke-width="1" fill="none"/>
+          <path d="M20,60 Q40,40 60,50 T85,35" stroke="#6b7280" stroke-width="0.8" fill="none"/>
+          <path d="M15,80 Q35,60 55,70 T80,65" stroke="#6b7280" stroke-width="0.6" fill="none"/>
+        </svg>
+      </div>
+
+      <!-- Contenu de la carte fallback -->
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="text-center p-8 bg-white/30 backdrop-blur-sm rounded-2xl max-w-md">
+          <div class="text-5xl mb-4 animate-pulse">🗺️</div>
+          <div class="text-xl font-bold text-gray-800 mb-2">Interactive Map</div>
+          <div class="text-sm text-gray-600 mb-6">Map in fallback mode - Your locations are shown below</div>
+
+          <!-- Affichage des locations avec markers visuels -->
+          <div v-if="pickup || destination" class="space-y-4">
+            <!-- Pickup -->
+            <div v-if="pickup" class="flex items-center justify-center space-x-3 bg-white/60 rounded-lg p-3">
+              <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                P
+              </div>
+              <div class="text-left">
+                <div class="text-sm font-semibold text-gray-800">Pickup</div>
+                <div class="text-xs text-gray-600">{{ getLocationName(pickup) }}</div>
+              </div>
+            </div>
+
+            <!-- Route Arrow -->
+            <div v-if="pickup && destination" class="flex justify-center">
+              <svg class="w-6 h-6 text-gray-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+              </svg>
+            </div>
+
+            <!-- Destination -->
+            <div v-if="destination" class="flex items-center justify-center space-x-3 bg-white/60 rounded-lg p-3">
+              <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                D
+              </div>
+              <div class="text-left">
+                <div class="text-sm font-semibold text-gray-800">Destination</div>
+                <div class="text-xs text-gray-600">{{ getLocationName(destination) }}</div>
+              </div>
+            </div>
+
+            <!-- Distance Info -->
+            <div v-if="routeDistance" class="mt-4 p-3 bg-blue-500/20 rounded-lg">
+              <div class="text-sm font-semibold text-gray-800">
+                Distance: {{ routeDistance }}
+              </div>
+              <div class="text-xs text-gray-600">Estimated route</div>
+            </div>
+          </div>
+
+          <!-- Fallback Controls -->
+          <div class="mt-6 space-y-2">
+            <div class="text-xs text-gray-500">Map fallback mode active</div>
+            <button
+              @click="retryMapInitialization"
+              class="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+            >
+              Try Real Map
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- Animated markers on fallback map -->
+      <div v-if="pickup"
+           class="absolute top-1/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 z-20">
+        <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg animate-pulse">
+          P
+        </div>
+        <div class="w-3 h-3 bg-red-500 rounded-full mx-auto mt-1"></div>
+      </div>
+
+      <div v-if="destination"
+           class="absolute top-2/3 right-1/3 transform translate-x-1/2 -translate-y-1/2 z-20">
+        <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold shadow-lg animate-pulse">
+          D
+        </div>
+        <div class="w-3 h-3 bg-gray-700 rounded-full mx-auto mt-1"></div>
+      </div>
+
+      <!-- Route line on fallback -->
+      <div v-if="pickup && destination" class="absolute inset-0 pointer-events-none z-10">
+        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path d="M33,33 Q50,20 67,67" stroke="#ef4444" stroke-width="0.5" fill="none"
+                stroke-dasharray="2,1" class="animate-pulse"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Map Success State -->
+    <div v-if="mapInitialized && !mapError && !showFallback"
+         class="absolute inset-0 pointer-events-none z-5">
+      <!-- Gradient overlay minimal pour la lisibilité -->
+      <div class="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/5"></div>
+
+      <!-- Debug Info (développement seulement) -->
+      <div v-if="debugMode" class="absolute top-4 left-4 bg-black/70 text-white p-2 rounded text-xs z-30">
+        <div>Markers: {{ pickupMarker ? 'P' : '' }}{{ destinationMarker ? 'D' : '' }}</div>
+        <div>Zoom: {{ currentZoom }}</div>
+        <div>Center: {{ currentCenter?.lat?.toFixed(3) }}, {{ currentCenter?.lng?.toFixed(3) }}</div>
+      </div>
+    </div>
+
+    <!-- Manual Center Button -->
+    <div v-if="mapInitialized && (pickup || destination) && !showFallback"
+         class="absolute bottom-4 right-4 z-20">
+      <button
+        @click="centerMapOnMarkers"
+        class="p-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg hover:bg-white/95 transition-all group"
+        title="Center map on locations"
+      >
+        <svg class="w-5 h-5 text-gray-700 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
 import type { Location } from '@/types/address.types';
 
 interface Props {
   pickup?: Location | null;
   destination?: Location | null;
   apiKey?: string;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   pickup: null,
   destination: null,
-  apiKey: ''
+  apiKey: '',
+  userLocation: null
 });
 
 // Reactive state
 const mapContainer = ref<HTMLElement | null>(null);
+const map = ref<any>(null);
+const platform = ref<any>(null);
 const mapInitialized = ref(false);
 const mapError = ref<string | null>(null);
 const showFallback = ref(false);
-const map = ref<any>(null);
-const platform = ref<any>(null);
+const loadingStatus = ref('Initializing...');
+const debugMode = ref(false);
+
+// Map state tracking
+const currentZoom = ref(10);
+const currentCenter = ref<{ lat: number; lng: number } | null>(null);
+
+// Markers
+const pickupMarker = ref<any>(null);
+const destinationMarker = ref<any>(null);
+const routeLine = ref<any>(null);
+
+// Computed
+const routeDistance = computed(() => {
+  if (!props.pickup || !props.destination) return null;
+
+  const R = 6371;
+  const dLat = (props.destination.lat - props.pickup.lat) * Math.PI / 180;
+  const dLng = (props.destination.lng - props.pickup.lng) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(props.pickup.lat * Math.PI / 180) * Math.cos(props.destination.lat * Math.PI / 180) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c;
+
+  if (distance < 1) {
+    return `${Math.round(distance * 1000)}m`;
+  }
+  return `${distance.toFixed(1)}km`;
+});
 
 // Watch for pickup changes
 watch(
   () => props.pickup,
   (newPickup) => {
-    if (newPickup && mapInitialized.value && map.value) {
-      addMarker(newPickup, 'pickup');
-      updateRoute();
+    if (newPickup && mapInitialized.value) {
+      console.log('🔄 Pickup changed, adding marker:', newPickup);
+      addPickupMarker(newPickup);
+      // Délai pour permettre au marker d'être ajouté
+      setTimeout(() => {
+        updateRoute();
+        centerMapOnMarkers();
+      }, 500);
     }
-  }
+  },
+  { deep: true }
 );
 
 // Watch for destination changes
 watch(
   () => props.destination,
   (newDestination) => {
-    if (newDestination && mapInitialized.value && map.value) {
-      addMarker(newDestination, 'destination');
-      updateRoute();
+    if (newDestination && mapInitialized.value) {
+      console.log('🔄 Destination changed, adding marker:', newDestination);
+      addDestinationMarker(newDestination);
+      // Délai pour permettre au marker d'être ajouté
+      setTimeout(() => {
+        updateRoute();
+        centerMapOnMarkers();
+      }, 500);
     }
-  }
+  },
+  { deep: true }
 );
 
 // Methods
@@ -100,27 +268,20 @@ const checkHereSDK = (): boolean => {
     typeof (window as any).H.Map !== 'undefined';
 };
 
-const waitForHereSDK = (): Promise<boolean> => {
+const waitForHereSDK = (timeout = 10000): Promise<boolean> => {
   return new Promise((resolve) => {
     if (checkHereSDK()) {
-      console.log('✅ HERE Maps SDK already loaded');
       resolve(true);
       return;
     }
 
-    console.log('⏳ Waiting for HERE Maps SDK to load...');
-    let attempts = 0;
-    const maxAttempts = 100; // 10 seconds total
-
+    loadingStatus.value = 'Loading HERE SDK...';
+    const startTime = Date.now();
     const checkInterval = setInterval(() => {
-      attempts++;
-
       if (checkHereSDK()) {
-        console.log('✅ HERE Maps SDK loaded successfully');
         clearInterval(checkInterval);
         resolve(true);
-      } else if (attempts >= maxAttempts) {
-        console.error('❌ HERE Maps SDK failed to load after 10 seconds');
+      } else if (Date.now() - startTime > timeout) {
         clearInterval(checkInterval);
         resolve(false);
       }
@@ -130,121 +291,243 @@ const waitForHereSDK = (): Promise<boolean> => {
 
 const initializeMap = async () => {
   try {
-    console.log('🗺️ Starting map initialization...');
+    console.log('🗺️ Starting HERE Maps initialization...');
 
     if (!props.apiKey) {
-      throw new Error('HERE Maps API key is required');
+      console.warn('⚠️ No HERE Maps API key provided');
+      showFallback.value = true;
+      return;
     }
 
-    // Wait for DOM element
+    loadingStatus.value = 'Checking API key...';
+    console.log('🔑 API Key (first 10 chars):', props.apiKey.substring(0, 10));
+
     await nextTick();
 
     if (!mapContainer.value) {
       throw new Error('Map container element not found');
     }
 
-    console.log('📦 Map container found');
+    console.log('📦 Map container found:', mapContainer.value);
 
     // Wait for HERE SDK
+    loadingStatus.value = 'Loading HERE SDK...';
     const sdkLoaded = await waitForHereSDK();
     if (!sdkLoaded) {
       throw new Error('HERE Maps SDK failed to load');
     }
 
-    // Initialize HERE platform
-    console.log('🚀 Initializing HERE platform...');
-    platform.value = new (window as any).H.service.Platform({
-      'apikey': props.apiKey
-    });
+    console.log('✅ HERE SDK loaded');
+
+    // Initialize platform with validation
+    loadingStatus.value = 'Initializing platform...';
+    try {
+      platform.value = new (window as any).H.service.Platform({
+        'apikey': props.apiKey
+      });
+      console.log('✅ Platform initialized');
+    } catch (platformError) {
+      console.error('❌ Platform initialization failed:', platformError);
+      throw new Error(`Invalid API key or platform error: ${platformError.message}`);
+    }
 
     // Get default layers
-    const defaultLayers = platform.value.createDefaultLayers();
-    console.log('🗂️ Default layers created');
+    loadingStatus.value = 'Loading map layers...';
+    let defaultLayers;
+    try {
+      defaultLayers = platform.value.createDefaultLayers();
+      console.log('✅ Default layers created');
+    } catch (layersError) {
+      console.error('❌ Layers creation failed:', layersError);
+      throw new Error(`Failed to create map layers: ${layersError.message}`);
+    }
 
-    // Initialize map
-    console.log('🗺️ Creating map instance...');
-    map.value = new (window as any).H.Map(
-      mapContainer.value,
-      defaultLayers.vector.normal.map,
-      {
-        zoom: 10,
-        center: { lat: 45.5017, lng: -73.5673 } // Montreal default
-      }
-    );
+    // Set center location
+    const center = props.userLocation || { lat: 45.5017, lng: -73.5673 };
+    console.log('📍 Setting center to:', center);
+    currentCenter.value = center;
 
-    // Enable map interaction
-    new (window as any).H.mapevents.Behavior();
-    new (window as any).H.ui.UI.createDefault(map.value);
+    // Create map with error handling
+    loadingStatus.value = 'Creating map...';
+    try {
+      map.value = new (window as any).H.Map(
+        mapContainer.value,
+        defaultLayers.vector.normal.map,
+        {
+          zoom: props.userLocation ? 12 : 10,
+          center: center
+        }
+      );
+      console.log('✅ Map created successfully');
+      currentZoom.value = props.userLocation ? 12 : 10;
+    } catch (mapError) {
+      console.error('❌ Map creation failed:', mapError);
+      throw new Error(`Failed to create map instance: ${mapError.message}`);
+    }
 
-    console.log('✅ Map interactions enabled');
+    // Enable interactions with error handling
+    loadingStatus.value = 'Setting up interactions...';
+    try {
+      new (window as any).H.mapevents.Behavior();
+      console.log('✅ Map interactions enabled');
+    } catch (interactionError) {
+      console.warn('⚠️ Failed to enable interactions (non-critical):', interactionError);
+    }
+
+    // Try to add UI but don't fail if it doesn't work
+    try {
+      new (window as any).H.ui.UI.createDefault(map.value);
+      console.log('✅ Map UI enabled');
+    } catch (uiError) {
+      console.warn('⚠️ Failed to enable UI (non-critical):', uiError);
+    }
+
+    // Listen to map events for state tracking
+    if (map.value) {
+      map.value.addEventListener('mapviewchange', () => {
+        try {
+          const viewModel = map.value.getViewModel();
+          currentZoom.value = viewModel.getZoom();
+          currentCenter.value = viewModel.getCenter();
+        } catch (error) {
+          console.warn('Failed to update map state:', error);
+        }
+      });
+    }
+
+    // Apply styling
+    setTimeout(() => {
+      applyMapStyling();
+    }, 1000);
 
     mapInitialized.value = true;
     mapError.value = null;
     showFallback.value = false;
 
-    // Add existing markers if available
+    // Add existing markers with proper centering
+    let hasMarkers = false;
     if (props.pickup) {
-      addMarker(props.pickup, 'pickup');
+      addPickupMarker(props.pickup);
+      hasMarkers = true;
     }
     if (props.destination) {
-      addMarker(props.destination, 'destination');
+      addDestinationMarker(props.destination);
+      hasMarkers = true;
     }
     if (props.pickup && props.destination) {
       updateRoute();
     }
 
-    console.log('🎉 HERE Maps initialized successfully!');
+    // Center on markers if they exist
+    if (hasMarkers) {
+      setTimeout(() => {
+        centerMapOnMarkers();
+      }, 1000);
+    }
+
+    console.log('🎉 HERE Maps initialization complete!');
+
   } catch (error) {
-    console.error('❌ Error initializing HERE Maps:', error);
+    console.error('❌ Map initialization failed:', error);
     mapError.value = error instanceof Error ? error.message : 'Failed to initialize map';
     mapInitialized.value = false;
 
-    // Show fallback after 2 seconds
+    // Auto-fallback after 3 seconds
     setTimeout(() => {
-      showFallback.value = true;
-    }, 2000);
+      if (!mapInitialized.value) {
+        showFallback.value = true;
+      }
+    }, 3000);
   }
 };
 
-const addMarker = (location: Location, type: 'pickup' | 'destination') => {
+const applyMapStyling = () => {
+  if (!mapContainer.value || !map.value) return;
+
+  try {
+    const mapElement = mapContainer.value.querySelector('.H_Map') as HTMLElement;
+    if (mapElement) {
+      mapElement.style.filter = 'grayscale(20%) contrast(0.95) brightness(1.02)';
+      mapElement.style.opacity = '0.95';
+    }
+
+    const uiElements = mapContainer.value.querySelectorAll('.H_ui');
+    uiElements.forEach(element => {
+      (element as HTMLElement).style.opacity = '0.8';
+    });
+
+    console.log('🎨 Map styling applied');
+  } catch (error) {
+    console.warn('⚠️ Failed to apply styling:', error);
+  }
+};
+
+const createMarkerIcon = (type: 'pickup' | 'destination') => {
+  const color = type === 'pickup' ? '#ef4444' : '#374151';
+  const symbol = type === 'pickup' ? 'P' : 'D';
+
+  const svgMarkup = `
+    <svg width="40" height="48" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow-${type}" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.3)"/>
+        </filter>
+      </defs>
+      <path d="M20 0C8.954 0 0 8.954 0 20c0 20 20 28 20 28s20-8 20-28C40 8.954 31.046 0 20 0z"
+            fill="${color}" filter="url(#shadow-${type})"/>
+      <circle cx="20" cy="20" r="14" fill="white"/>
+      <text x="20" y="26" text-anchor="middle" fill="${color}"
+            font-size="16" font-weight="bold" font-family="Arial, sans-serif">
+        ${symbol}
+      </text>
+    </svg>
+  `;
+
+  return new (window as any).H.map.Icon(
+    `data:image/svg+xml,${encodeURIComponent(svgMarkup)}`,
+    { size: { w: 40, h: 48 }, anchor: { x: 20, y: 48 } }
+  );
+};
+
+const addPickupMarker = (location: Location) => {
   if (!map.value || !mapInitialized.value) {
-    console.warn('Map not initialized, cannot add marker');
+    console.warn('⚠️ Cannot add pickup marker: map not initialized');
     return;
   }
 
   try {
-    const color = type === 'pickup' ? '#dc2626' : '#059669';
-    const symbol = type === 'pickup' ? 'P' : 'D';
+    // Remove existing marker
+    if (pickupMarker.value) {
+      map.value.removeObject(pickupMarker.value);
+    }
 
-    // Create custom marker SVG
-    const svgMarkup = `
-      <svg width="32" height="40" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="shadow-${type}" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
-          </filter>
-        </defs>
-        <path d="M16 0C7.164 0 0 7.164 0 16c0 16 16 24 16 24s16-8 16-24C32 7.164 24.836 0 16 0z"
-              fill="${color}" filter="url(#shadow-${type})"/>
-        <circle cx="16" cy="16" r="10" fill="white"/>
-        <text x="16" y="20" text-anchor="middle" fill="${color}"
-              font-size="12" font-weight="bold" font-family="Arial, sans-serif">
-          ${symbol}
-        </text>
-      </svg>
-    `;
-
-    const icon = new (window as any).H.map.Icon(
-      `data:image/svg+xml,${encodeURIComponent(svgMarkup)}`,
-      { size: { w: 32, h: 40 }, anchor: { x: 16, y: 40 } }
-    );
-
-    const marker = new (window as any).H.map.Marker(location, { icon });
-    map.value.addObject(marker);
-
-    console.log(`✅ ${type} marker added at:`, location);
+    const icon = createMarkerIcon('pickup');
+    pickupMarker.value = new (window as any).H.map.Marker(location, { icon });
+    map.value.addObject(pickupMarker.value);
+    console.log('📍 Pickup marker added at:', location);
   } catch (error) {
-    console.error('❌ Error adding marker:', error);
+    console.error('❌ Error adding pickup marker:', error);
+  }
+};
+
+const addDestinationMarker = (location: Location) => {
+  if (!map.value || !mapInitialized.value) {
+    console.warn('⚠️ Cannot add destination marker: map not initialized');
+    return;
+  }
+
+  try {
+    // Remove existing marker
+    if (destinationMarker.value) {
+      map.value.removeObject(destinationMarker.value);
+    }
+
+    const icon = createMarkerIcon('destination');
+    destinationMarker.value = new (window as any).H.map.Marker(location, { icon });
+    map.value.addObject(destinationMarker.value);
+    console.log('🎯 Destination marker added at:', location);
+  } catch (error) {
+    console.error('❌ Error adding destination marker:', error);
   }
 };
 
@@ -252,35 +535,90 @@ const updateRoute = () => {
   if (!map.value || !props.pickup || !props.destination) return;
 
   try {
-    // Clear existing route
-    clearMap();
+    // Remove existing route
+    if (routeLine.value) {
+      map.value.removeObject(routeLine.value);
+    }
 
-    // Re-add markers
-    addMarker(props.pickup, 'pickup');
-    addMarker(props.destination, 'destination');
-
-    // Draw simple line between points
+    // Create new route line
     const lineString = new (window as any).H.geo.LineString();
-    lineString.pushPoint({ lat: props.pickup.lat, lng: props.pickup.lng });
-    lineString.pushPoint({ lat: props.destination.lat, lng: props.destination.lng });
+    lineString.pushPoint(props.pickup);
+    lineString.pushPoint(props.destination);
 
-    const routeLine = new (window as any).H.map.Polyline(lineString, {
+    routeLine.value = new (window as any).H.map.Polyline(lineString, {
       style: {
-        lineWidth: 4,
-        strokeColor: '#3b82f6',
-        lineDash: [4, 4],
-        opacity: 0.8
+        lineWidth: 6,
+        strokeColor: '#ef4444',
+        lineDash: [10, 5],
+        opacity: 0.8,
+        lineCap: 'round'
       }
     });
 
-    map.value.addObject(routeLine);
-
-    // Fit map to show both points
-    fitToCoordinates([props.pickup, props.destination]);
-
-    console.log('✅ Route updated successfully');
+    map.value.addObject(routeLine.value);
+    console.log('🛣️ Route updated');
   } catch (error) {
     console.error('❌ Error updating route:', error);
+  }
+};
+
+const centerMapOnMarkers = () => {
+  if (!map.value || !mapInitialized.value) {
+    console.warn('⚠️ Cannot center map: map not initialized');
+    return;
+  }
+
+  try {
+    console.log('🎯 Centering map on markers...');
+
+    const locations = [];
+    if (props.pickup) locations.push(props.pickup);
+    if (props.destination) locations.push(props.destination);
+
+    if (locations.length === 0) {
+      console.warn('⚠️ No locations to center on');
+      return;
+    }
+
+    if (locations.length === 1) {
+      // Center on single location
+      map.value.setCenter(locations[0]);
+      map.value.setZoom(14);
+      console.log('📍 Centered on single location:', locations[0]);
+    } else {
+      // Fit multiple locations
+      const group = new (window as any).H.map.Group();
+      locations.forEach(location => {
+        const marker = new (window as any).H.map.Marker(location);
+        group.addObject(marker);
+      });
+
+      const boundingBox = group.getBoundingBox();
+      console.log('📦 Bounding box:', boundingBox);
+
+      // Set view with padding
+      map.value.getViewModel().setLookAtData({
+        bounds: boundingBox,
+        padding: { top: 100, right: 100, bottom: 100, left: 100 }
+      });
+
+      console.log('✅ Map centered on all markers');
+    }
+
+    // Update current state
+    setTimeout(() => {
+      try {
+        const viewModel = map.value.getViewModel();
+        currentZoom.value = viewModel.getZoom();
+        currentCenter.value = viewModel.getCenter();
+        console.log('📊 Map state updated - Zoom:', currentZoom.value, 'Center:', currentCenter.value);
+      } catch (error) {
+        console.warn('Failed to update map state after centering:', error);
+      }
+    }, 1000);
+
+  } catch (error) {
+    console.error('❌ Error centering map on markers:', error);
   }
 };
 
@@ -289,69 +627,66 @@ const clearMap = () => {
 
   try {
     map.value.removeObjects(map.value.getObjects());
+    pickupMarker.value = null;
+    destinationMarker.value = null;
+    routeLine.value = null;
     console.log('🧹 Map cleared');
   } catch (error) {
     console.error('❌ Error clearing map:', error);
   }
 };
 
-const fitToCoordinates = (coordinates: Location[]) => {
-  if (!map.value || coordinates.length === 0) return;
-
-  try {
-    const group = new (window as any).H.map.Group();
-    coordinates.forEach(coord => {
-      group.addObject(new (window as any).H.map.Marker(coord));
-    });
-
-    map.value.getViewModel().setLookAtData({
-      bounds: group.getBoundingBox(),
-      padding: { top: 50, right: 50, bottom: 50, left: 50 }
-    });
-  } catch (error) {
-    console.error('❌ Error fitting to coordinates:', error);
-  }
-};
-
-const retryMapInitialization = () => {
+const retryInitialization = () => {
   mapError.value = null;
   showFallback.value = false;
   mapInitialized.value = false;
   initializeMap();
 };
 
-onMounted(() => {
-  if (props.apiKey) {
-    initializeMap();
-  } else {
-    console.warn('HERE Maps API key not provided, showing fallback');
-    showFallback.value = true;
+const retryMapInitialization = () => {
+  showFallback.value = false;
+  initializeMap();
+};
+
+// Utility methods for fallback
+const getLocationName = (location: Location): string => {
+  if (location.address) {
+    const parts = location.address.split(',');
+    return parts[0]?.trim() || 'Location';
   }
+  return 'Location';
+};
+
+// Lifecycle
+onMounted(() => {
+  // Enable debug mode in development
+  debugMode.value = import.meta.env.DEV || false;
+  initializeMap();
 });
 
 onUnmounted(() => {
   if (map.value) {
-    map.value.dispose?.();
+    try {
+      map.value.dispose?.();
+    } catch (error) {
+      console.warn('Map disposal error:', error);
+    }
   }
 });
 
-// Expose methods if needed
+// Expose methods
 defineExpose({
   clearMap,
-  addMarker,
-  retryMapInitialization
+  retryInitialization,
+  centerMapOnMarkers
 });
 </script>
 
 <style scoped>
-/* Map specific styles */
-.map-container {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Ensure HERE Maps elements are styled correctly */
+/* Ensure HERE Maps renders correctly */
 :deep(.H_Map) {
+  filter: grayscale(20%) contrast(0.95) brightness(1.02);
+  transition: filter 0.5s ease;
   width: 100% !important;
   height: 100% !important;
 }
@@ -359,5 +694,30 @@ defineExpose({
 :deep(.H_Map canvas) {
   width: 100% !important;
   height: 100% !important;
+}
+
+:deep(.H_ui) {
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+/* Animations */
+.animate-bounce {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    transform: translate3d(0,-15px,0);
+  }
+  70% {
+    transform: translate3d(0,-7px,0);
+  }
+  90% {
+    transform: translate3d(0,-2px,0);
+  }
 }
 </style>
