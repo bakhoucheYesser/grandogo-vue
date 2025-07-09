@@ -226,18 +226,34 @@ const routeDistance = computed(() => {
   return `${distance.toFixed(1)}km`;
 });
 
+
+function sanitizeLocation(location: any) {
+  return {
+    lat: location?.lat,
+    lng: location?.lng
+  };
+}
 // Watch for pickup changes
 watch(
   () => props.pickup,
-  (newPickup) => {
+  (newPickup, oldPickup) => {
     if (newPickup && mapInitialized.value) {
       console.log('🔄 Pickup changed, adding marker:', newPickup);
       addPickupMarker(newPickup);
-      // Délai pour permettre au marker d'être ajouté
-      setTimeout(() => {
-        updateRoute();
-        centerMapOnMarkers();
-      }, 500);
+
+      // If we also have destination, update route and center
+      if (props.destination) {
+        setTimeout(() => {
+          updateRoute();
+          setTimeout(() => {
+            centerMapOnMarkers();
+          }, 100);
+        }, 300);
+      }
+    } else if (!newPickup && routeLine.value) {
+      // Remove route if pickup is cleared
+      map.value?.removeObject(routeLine.value);
+      routeLine.value = null;
     }
   },
   { deep: true }
@@ -246,15 +262,24 @@ watch(
 // Watch for destination changes
 watch(
   () => props.destination,
-  (newDestination) => {
+  (newDestination, oldDestination) => {
     if (newDestination && mapInitialized.value) {
       console.log('🔄 Destination changed, adding marker:', newDestination);
       addDestinationMarker(newDestination);
-      // Délai pour permettre au marker d'être ajouté
-      setTimeout(() => {
-        updateRoute();
-        centerMapOnMarkers();
-      }, 500);
+
+      // If we also have pickup, update route and center
+      if (props.pickup) {
+        setTimeout(() => {
+          updateRoute();
+          setTimeout(() => {
+            centerMapOnMarkers();
+          }, 100);
+        }, 300);
+      }
+    } else if (!newDestination && routeLine.value) {
+      // Remove route if destination is cleared
+      map.value?.removeObject(routeLine.value);
+      routeLine.value = null;
     }
   },
   { deep: true }
@@ -368,7 +393,7 @@ const initializeMap = async () => {
     // Enable interactions with error handling
     loadingStatus.value = 'Setting up interactions...';
     try {
-      new (window as any).H.mapevents.Behavior();
+      const behavior = new (window as any).H.mapevents.Behavior(new (window as any).H.mapevents.MapEvents(map.value));
       console.log('✅ Map interactions enabled');
     } catch (interactionError) {
       console.warn('⚠️ Failed to enable interactions (non-critical):', interactionError);
@@ -376,8 +401,13 @@ const initializeMap = async () => {
 
     // Try to add UI but don't fail if it doesn't work
     try {
-      new (window as any).H.ui.UI.createDefault(map.value);
-      console.log('✅ Map UI enabled');
+      // Check if we have the required layers for UI
+      if (defaultLayers && defaultLayers.raster) {
+        const ui = (window as any).H.ui.UI.createDefault(map.value);
+        console.log('✅ Map UI enabled');
+      } else {
+        console.log('⚠️ UI skipped - raster layers not available');
+      }
     } catch (uiError) {
       console.warn('⚠️ Failed to enable UI (non-critical):', uiError);
     }
@@ -386,9 +416,8 @@ const initializeMap = async () => {
     if (map.value) {
       map.value.addEventListener('mapviewchange', () => {
         try {
-          const viewModel = map.value.getViewModel();
-          currentZoom.value = viewModel.getZoom();
-          currentCenter.value = viewModel.getCenter();
+          currentZoom.value = map.value.getZoom();
+          currentCenter.value = map.value.getCenter();
         } catch (error) {
           console.warn('Failed to update map state:', error);
         }
@@ -414,15 +443,18 @@ const initializeMap = async () => {
       addDestinationMarker(props.destination);
       hasMarkers = true;
     }
-    if (props.pickup && props.destination) {
-      updateRoute();
-    }
 
-    // Center on markers if they exist
-    if (hasMarkers) {
+    // Add route if both markers exist
+    if (props.pickup && props.destination) {
+      setTimeout(() => {
+        updateRoute();
+        centerMapOnMarkers();
+      }, 300);
+    } else if (hasMarkers) {
+      // Just center on available markers
       setTimeout(() => {
         centerMapOnMarkers();
-      }, 1000);
+      }, 300);
     }
 
     console.log('🎉 HERE Maps initialization complete!');
@@ -490,6 +522,7 @@ const createMarkerIcon = (type: 'pickup' | 'destination') => {
 };
 
 const addPickupMarker = (location: Location) => {
+  location = sanitizeLocation(location);
   if (!map.value || !mapInitialized.value) {
     console.warn('⚠️ Cannot add pickup marker: map not initialized');
     return;
@@ -502,7 +535,7 @@ const addPickupMarker = (location: Location) => {
     }
 
     const icon = createMarkerIcon('pickup');
-    pickupMarker.value = new (window as any).H.map.Marker(location, { icon });
+    pickupMarker.value = new (window as any).H.map.Marker({ lat: location.lat, lng: location.lng }, { icon });
     map.value.addObject(pickupMarker.value);
     console.log('📍 Pickup marker added at:', location);
   } catch (error) {
@@ -523,7 +556,7 @@ const addDestinationMarker = (location: Location) => {
     }
 
     const icon = createMarkerIcon('destination');
-    destinationMarker.value = new (window as any).H.map.Marker(location, { icon });
+    destinationMarker.value = new (window as any).H.map.Marker({ lat: location.lat, lng: location.lng }, { icon });
     map.value.addObject(destinationMarker.value);
     console.log('🎯 Destination marker added at:', location);
   } catch (error) {
@@ -532,33 +565,60 @@ const addDestinationMarker = (location: Location) => {
 };
 
 const updateRoute = () => {
-  if (!map.value || !props.pickup || !props.destination) return;
+  if (!map.value || !props.pickup || !props.destination || !mapInitialized.value) {
+    console.log('⚠️ Cannot update route: missing requirements');
+    console.log('Map:', !!map.value, 'Pickup:', !!props.pickup, 'Destination:', !!props.destination, 'Initialized:', mapInitialized.value);
+    return;
+  }
+
+  // Add validation for coordinates
+  if (!props.pickup.lat || !props.pickup.lng || !props.destination.lat || !props.destination.lng) {
+    console.error('❌ Invalid coordinates:', {
+      pickup: { lat: props.pickup.lat, lng: props.pickup.lng },
+      destination: { lat: props.destination.lat, lng: props.destination.lng }
+    });
+    return;
+  }
 
   try {
     // Remove existing route
     if (routeLine.value) {
       map.value.removeObject(routeLine.value);
+      routeLine.value = null;
     }
 
-    // Create new route line
-    const lineString = new (window as any).H.geo.LineString();
-    lineString.pushPoint(props.pickup);
-    lineString.pushPoint(props.destination);
+    console.log('🛣️ Creating route between:', {
+      pickup: { lat: props.pickup.lat, lng: props.pickup.lng },
+      destination: { lat: props.destination.lat, lng: props.destination.lng }
+    });
 
+    // Create new route line using correct API
+    const lineString = new (window as any).H.geo.LineString();
+    const pickup = sanitizeLocation(props.pickup);
+    const destination = sanitizeLocation(props.destination);
+    // Add the two points using validated coordinates
+    lineString.pushPoint(pickup);
+    lineString.pushPoint(destination);
+
+
+    // Create polyline with corrected styling
     routeLine.value = new (window as any).H.map.Polyline(lineString, {
       style: {
-        lineWidth: 6,
-        strokeColor: '#ef4444',
-        lineDash: [10, 5],
-        opacity: 0.8,
-        lineCap: 'round'
+        'strokeColor': '#ef4444',
+        'lineWidth': 4,
+        'lineDash': [8, 4],
+        'opacity': 0.8
       }
     });
 
+    // Add to map
     map.value.addObject(routeLine.value);
-    console.log('🛣️ Route updated');
+    console.log('✅ Route created and added to map successfully');
+
   } catch (error) {
     console.error('❌ Error updating route:', error);
+    console.error('Pickup data:', props.pickup);
+    console.error('Destination data:', props.destination);
   }
 };
 
@@ -572,8 +632,8 @@ const centerMapOnMarkers = () => {
     console.log('🎯 Centering map on markers...');
 
     const locations = [];
-    if (props.pickup) locations.push(props.pickup);
-    if (props.destination) locations.push(props.destination);
+    if (props.pickup) locations.push(sanitizeLocation(props.pickup));
+    if (props.destination) locations.push(sanitizeLocation(props.destination));
 
     if (locations.length === 0) {
       console.warn('⚠️ No locations to center on');
@@ -581,26 +641,29 @@ const centerMapOnMarkers = () => {
     }
 
     if (locations.length === 1) {
-      // Center on single location
-      map.value.setCenter(locations[0]);
+      // Center on single location using correct API
+      const location = locations[0];
+      map.value.setCenter({ lat: location.lat, lng: location.lng });
       map.value.setZoom(14);
-      console.log('📍 Centered on single location:', locations[0]);
+      console.log('📍 Centered on single location:', location);
     } else {
-      // Fit multiple locations
-      const group = new (window as any).H.map.Group();
-      locations.forEach(location => {
-        const marker = new (window as any).H.map.Marker(location);
-        group.addObject(marker);
-      });
+      // Calculate center manually for multiple locations
+      const avgLat = locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length;
+      const avgLng = locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length;
 
-      const boundingBox = group.getBoundingBox();
-      console.log('📦 Bounding box:', boundingBox);
+      // Calculate appropriate zoom level based on distance
+      const latDiff = Math.abs(locations[0].lat - locations[1].lat);
+      const lngDiff = Math.abs(locations[0].lng - locations[1].lng);
+      const maxDiff = Math.max(latDiff, lngDiff);
 
-      // Set view with padding
-      map.value.getViewModel().setLookAtData({
-        bounds: boundingBox,
-        padding: { top: 100, right: 100, bottom: 100, left: 100 }
-      });
+      let zoom = 10;
+      if (maxDiff < 0.01) zoom = 14;
+      else if (maxDiff < 0.1) zoom = 12;
+      else if (maxDiff < 1) zoom = 10;
+      else zoom = 8;
+
+      map.value.setCenter({ lat: avgLat, lng: avgLng });
+      map.value.setZoom(zoom);
 
       console.log('✅ Map centered on all markers');
     }
@@ -608,14 +671,13 @@ const centerMapOnMarkers = () => {
     // Update current state
     setTimeout(() => {
       try {
-        const viewModel = map.value.getViewModel();
-        currentZoom.value = viewModel.getZoom();
-        currentCenter.value = viewModel.getCenter();
+        currentZoom.value = map.value.getZoom();
+        currentCenter.value = map.value.getCenter();
         console.log('📊 Map state updated - Zoom:', currentZoom.value, 'Center:', currentCenter.value);
       } catch (error) {
         console.warn('Failed to update map state after centering:', error);
       }
-    }, 1000);
+    }, 500);
 
   } catch (error) {
     console.error('❌ Error centering map on markers:', error);
