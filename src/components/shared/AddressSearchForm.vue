@@ -177,7 +177,6 @@ const handlePickupSelected = (address: PlaceResult) => {
   });
 
   emit('pickup-selected', address);
-  toastService.success(`Pickup location set: ${address.address.city || 'Selected'}`);
 };
 
 const handleDestinationSelected = (address: PlaceResult) => {
@@ -188,7 +187,6 @@ const handleDestinationSelected = (address: PlaceResult) => {
   };
 
   emit('destination-selected', address);
-  toastService.success(`Destination set: ${address.address.city || 'Selected'}`);
 };
 
 const swapAddresses = () => {

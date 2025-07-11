@@ -442,8 +442,6 @@ const calculateRoute = async () => {
       }
     };
 
-    toastService.success(`Route calculated: ${formatDistance(distance)} • ${formatDuration(duration)}`);
-
   } catch (error) {
     console.error('Route calculation failed:', error);
     toastService.error('Failed to calculate route');

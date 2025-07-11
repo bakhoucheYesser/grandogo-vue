@@ -49,8 +49,6 @@ export function useAddressSearch(options: AddressSearchOptions = {}) {
       lng: address.position.lng,
       address: address.address.label
     };
-
-    toastService.success(`Pickup location set: ${address.address.city || 'Selected'}`);
   };
 
   const handleDestinationSelected = (address: PlaceResult) => {
@@ -59,32 +57,6 @@ export function useAddressSearch(options: AddressSearchOptions = {}) {
       lng: address.position.lng,
       address: address.address.label
     };
-
-    toastService.success(`Destination set: ${address.address.city || 'Selected'}`);
-  };
-
-  const swapAddresses = () => {
-    if (selectedPickup.value && selectedDestination.value) {
-      const tempPickup = selectedPickup.value;
-      const tempPickupAddress = pickupAddress.value;
-
-      selectedPickup.value = selectedDestination.value;
-      pickupAddress.value = destinationAddress.value;
-
-      selectedDestination.value = tempPickup;
-      destinationAddress.value = tempPickupAddress;
-
-      toastService.success('Addresses swapped');
-    }
-  };
-
-  const clearAllAddresses = () => {
-    pickupAddress.value = '';
-    destinationAddress.value = '';
-    selectedPickup.value = null;
-    selectedDestination.value = null;
-
-    toastService.success('All addresses cleared');
   };
 
   const setPickupLocation = (location: Location, address?: string) => {
@@ -293,8 +265,6 @@ export function useAddressSearch(options: AddressSearchOptions = {}) {
     setDestinationLocation,
 
     // Methods - Actions
-    swapAddresses,
-    clearAllAddresses,
     navigateToEstimate,
     reset,
 
