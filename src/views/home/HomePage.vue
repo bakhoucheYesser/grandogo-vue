@@ -11,69 +11,17 @@
             Fully insured. On your schedule. Arriving in as little as 30 minutes.
           </p>
 
-          <!-- Updated Address Form -->
-          <form class="w-full ">
-            <div class="flex items-center bg-white border-2 border-gray-300 rounded-2xl p-2 shadow-lg hover:border-gray-400 focus-within:border-red-500 transition-all duration-200">
-
-              <!-- Pickup Address Field -->
-              <div class="flex-1 px-4 py-2">
-                <!-- Label and Icon on same line -->
-                <div class="flex items-center mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke-width="2" stroke="currentColor"
-                       class="w-4 h-4 text-red-600 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"></path>
-                  </svg>
-                  <div class="text-xs font-medium text-red-600">Pick up from</div>
-                </div>
-                <!-- Input field -->
-                <input
-                  class="w-full text-base text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                  placeholder="Pickup address"
-                  type="text"
-                />
-              </div>
-
-              <!-- Divider -->
-              <div class="w-px h-12 bg-gray-300 mx-2"></div>
-
-              <!-- Delivery Address Field -->
-              <div class="flex-1 px-4 py-2">
-                <!-- Label and Icon on same line -->
-                <div class="flex items-center mb-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke-width="2" stroke="currentColor"
-                       class="w-4 h-4 text-red-600 mr-2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1115 0z"></path>
-                  </svg>
-                  <div class="text-xs font-medium text-red-600">Move to</div>
-                </div>
-                <!-- Input field -->
-                <input
-                  class="w-full text-base text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                  placeholder="Drop-off address"
-                  type="text"
-                />
-              </div>
-
-              <!-- Submit Button -->
-              <div class="ml-2">
-                <button
-                  type="submit"
-                  class="bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-red-500/30 hover:shadow-red-500/40 focus:ring-4 focus:outline-none focus:ring-red-300 transition-all duration-200 whitespace-nowrap"
-                >
-                  See prices
-                </button>
-              </div>
-            </div>
-          </form>
+          <!-- Address Search Form -->
+          <AddressSearchForm
+            submit-text="See prices"
+            mode="navigate"
+            :user-location="userLocation"
+            @submit="handleFormSubmit"
+          />
         </div>
       </div>
     </section>
+
     <!-- Vehicles Section -->
     <section class="pt-4 pl-4 pr-4">
       <div class="flex flex-col">
@@ -140,8 +88,6 @@
       </div>
     </section>
 
-
-
     <!-- Become a Truck Owner Section -->
     <section>
       <div class="container mx-auto flex justify-center p-12">
@@ -159,8 +105,12 @@
                 <h2 class="text-fluid-heading-1 font-bold text-white text-2xl">Earn money with your truck</h2>
                 <p class="text-paragraph-1 text-gray-300">Be active, meet new people &amp; make up to $2,500 a week!</p>
               </div>
-              <a class="transition duration-150 active:translate-y-px ease-in-out cursor-pointer border inline-flex items-center justify-center font-book font-medium text-label-2 h-12 rounded-xl px-6 space-x-2 focus:ring-4 bg-transparent border border-white hover:border-white/50 ring-white/20 text-white hover:text-white/50 w-full md:max-w-[17.5rem]"
-                 href="{{ path('app_become_trucker') }}"><span>Apply now</span></a>
+              <router-link
+                to="/become-driver"
+                class="transition duration-150 active:translate-y-px ease-in-out cursor-pointer border inline-flex items-center justify-center font-book font-medium text-label-2 h-12 rounded-xl px-6 space-x-2 focus:ring-4 bg-transparent border border-white hover:border-white/50 ring-white/20 text-white hover:text-white/50 w-full md:max-w-[17.5rem]"
+              >
+                <span>Apply now</span>
+              </router-link>
             </div>
           </div>
         </div>
@@ -182,49 +132,57 @@
           <p class="text-gray-400 text-sm mb-2">Perfect for smaller items</p>
           <div class="text-2xl font-bold text-red-500 mb-2">From $40</div>
           <p class="text-gray-500 text-xs">+ $1.50/min • $2.00/km</p>
-          <a href="{{ path('app_estimate') }}"
-             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+          <router-link
+            to="/estimate"
+            class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider"
+          >
             Get estimate
-          </a>
+          </router-link>
         </div>
 
         <!-- Van -->
         <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="van" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <img :src="van" alt="Van" class="w-24 h-16 mx-auto mb-4 object-contain" />
           <h3 class="font-orbitron text-white text-lg uppercase mb-1">Van</h3>
           <p class="text-gray-400 text-sm mb-2">Good for medium loads</p>
           <div class="text-2xl font-bold text-red-500 mb-2">From $50</div>
           <p class="text-gray-500 text-xs">+ $1.75/min • $2.25/km</p>
-          <a href="{{ path('app_estimate') }}"
-             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+          <router-link
+            to="/estimate"
+            class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider"
+          >
             Get estimate
-          </a>
+          </router-link>
         </div>
 
         <!-- XL -->
         <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="xl" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <img :src="xl" alt="XL" class="w-24 h-16 mx-auto mb-4 object-contain" />
           <h3 class="font-orbitron text-white text-lg uppercase mb-1">XL</h3>
           <p class="text-gray-400 text-sm mb-2">Ideal for larger items</p>
           <div class="text-2xl font-bold text-red-500 mb-2">From $65</div>
           <p class="text-gray-500 text-xs">+ $2.00/min • $2.50/km</p>
-          <a href="{{ path('app_estimate') }}"
-             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-black font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+          <router-link
+            to="/estimate"
+            class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-black font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider"
+          >
             Get estimate
-          </a>
+          </router-link>
         </div>
 
         <!-- Box Truck -->
         <div class="bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-4 text-center shadow-md transition-transform hover:scale-105 duration-300">
-          <img :src="box" alt="Pickup" class="w-24 h-16 mx-auto mb-4 object-contain" />
+          <img :src="box" alt="Box Truck" class="w-24 h-16 mx-auto mb-4 object-contain" />
           <h3 class="font-orbitron text-white text-lg uppercase mb-1">Box Truck</h3>
           <p class="text-gray-400 text-sm mb-2">For full moves</p>
           <div class="text-2xl font-bold text-red-500 mb-2">From $85</div>
           <p class="text-gray-500 text-xs">+ $2.50/min • $3.00/km</p>
-          <a href="{{ path('app_estimate') }}"
-             class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider">
+          <router-link
+            to="/estimate"
+            class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-bold rounded-lg text-sm px-5 py-2.5 text-center mt-4 block font-orbitron uppercase tracking-wider"
+          >
             Get estimate
-          </a>
+          </router-link>
         </div>
       </div>
     </section>
@@ -241,11 +199,9 @@
         <div class="bg-white p-6 rounded-lg shadow-md">
           <div class="flex items-center mb-4">
             <div class="text-yellow-400 flex mr-2">
-              {% for i in 1..5 %}
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              {% endfor %}
             </div>
             <div class="text-gray-600">5.0</div>
           </div>
@@ -258,11 +214,9 @@
         <div class="bg-white p-6 rounded-lg shadow-md">
           <div class="flex items-center mb-4">
             <div class="text-yellow-400 flex mr-2">
-              {% for i in 1..5 %}
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              {% endfor %}
             </div>
             <div class="text-gray-600">5.0</div>
           </div>
@@ -275,11 +229,9 @@
         <div class="bg-white p-6 rounded-lg shadow-md">
           <div class="flex items-center mb-4">
             <div class="text-yellow-400 flex mr-2">
-              {% for i in 1..5 %}
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <svg v-for="i in 5" :key="i" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              {% endfor %}
             </div>
             <div class="text-gray-600">4.8</div>
           </div>
@@ -290,19 +242,37 @@
       </div>
     </section>
 
+    <!-- CTA Section -->
     <section class="bg-gradient-to-l from-red-700 to-red-900 rounded-xl p-8 md:p-12 text-center text-white">
       <h2 class="text-3xl font-bold mb-4">Ready to move with GrandoGo?</h2>
       <p class="text-xl mb-8 max-w-3xl mx-auto">Whether you're moving a single item or an entire apartment, we've got you covered. Get started today!</p>
       <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-        <a href="{{ path('app_estimate') }}" class="bg-white text-red-700 px-6 py-3 rounded-md font-semibold hover:bg-gray-100">Get an estimate</a>
-        <a href="{{ path('app_register') }}" class="border border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-red-700">Sign up</a>
+        <router-link
+          to="/estimate"
+          class="bg-white text-red-700 px-6 py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors"
+        >
+          Get an estimate
+        </router-link>
+        <router-link
+          to="/become-driver"
+          class="border border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-red-700 transition-colors"
+        >
+          Sign up
+        </router-link>
       </div>
     </section>
-
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
+import { useAddressSearch } from '@/composables/useAddressSearch';
+import type { Location } from '@/types/address.types';
+
+// Import components
+import AddressSearchForm from '@/components/shared/AddressSearchForm.vue';
+
+// Import images
 import vehicleLineupImage from '@/assets/images/illustrations/vehicle-lineup.svg';
 import luggersloadingvan from '@/assets/images/illustrations/luggers-loading-van.svg';
 import pickup from '@/assets/images/illustrations/pickup_truck.svg';
@@ -310,4 +280,22 @@ import van from '@/assets/images/illustrations/van_truck.svg';
 import xl from '@/assets/images/illustrations/xl_truck.svg';
 import box from '@/assets/images/illustrations/box_truck.svg';
 
+// Use address search composable
+const {
+  userLocation,
+  initialize
+} = useAddressSearch({
+  autoGetLocation: true
+});
+
+// Handle form submission (optionnel car le mode 'navigate' gère déjà la redirection)
+const handleFormSubmit = (data: { pickup: Location | null; destination: Location | null }) => {
+  console.log('Form submitted with data:', data);
+  // Cette fonction ne sera appelée que si on change le mode à 'emit'
+};
+
+// Initialize on mount
+onMounted(() => {
+  initialize();
+});
 </script>

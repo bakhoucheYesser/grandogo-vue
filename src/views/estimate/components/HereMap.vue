@@ -154,19 +154,6 @@
     </div>
 
     <!-- Manual Center Button -->
-    <div v-if="mapInitialized && (pickup || destination) && !showFallback"
-         class="absolute bottom-4 right-4 z-20">
-      <button
-        @click="centerMapOnMarkers"
-        class="p-3 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg hover:bg-white/95 transition-all group"
-        title="Center map on locations"
-      >
-        <svg class="w-5 h-5 text-gray-700 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-      </button>
-    </div>
   </div>
 </template>
 

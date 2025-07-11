@@ -1,14 +1,15 @@
 <template>
-  <div class="min-h-screen ">
-
+  <div class="min-h-screen">
     <!-- Titre principal au-dessus de la map -->
-    <div class="text-center py-12 ">
+    <div class="text-center py-12">
       <h1 class="text-5xl lg:text-7xl font-black text-gray-900 mb-4 drop-shadow-lg">
-        Start Your  <span class="text-red-600/50">Estimate</span>
+        Start Your <span class="text-red-600/50">Estimate</span>
       </h1>
       <p class="text-xl lg:text-2xl text-gray-700 font-medium drop-shadow-md">
-        Tell us where you're going to see your price and book your move      </p>
+        Tell us where you're going to see your price and book your move
+      </p>
     </div>
+
     <!-- Hero Section avec Map -->
     <section class="relative h-screen overflow-hidden">
       <!-- Map Background en plein écran -->
@@ -26,178 +27,36 @@
         <div class="absolute inset-0 bg-black/5"></div>
       </div>
 
-      <!-- Navigation et contrôles (optionnel) -->
-      <div class="absolute top-4 right-4 z-20 space-y-2">
-        <button
-          @click="centerOnUserLocation"
-          :disabled="!userLocation"
-          class="p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-          title="Center on my location"
-        >
-          <svg class="w-5 h-5 text-gray-600 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-        </button>
-      </div>
+<!--      &lt;!&ndash; Navigation et contrôles (optionnel) &ndash;&gt;-->
+<!--      <div class="absolute top-4 right-4 z-20 space-y-2">-->
+<!--        <button-->
+<!--          @click="centerOnUserLocation"-->
+<!--          :disabled="!userLocation"-->
+<!--          class="p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed group"-->
+<!--          title="Center on my location"-->
+<!--        >-->
+<!--          <svg class="w-5 h-5 text-gray-600 group-hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>-->
+<!--          </svg>-->
+<!--        </button>-->
+<!--      </div>-->
 
       <!-- Contenu principal centré -->
       <div class="absolute top-0 left-0 right-0 flex flex-col items-center z-10 px-4 pt-6">
-
         <!-- Formulaire principal style GrandoGo -->
-        <div class="w-full ">
-          <div class="bg-white rounded-2xl shadow-2xl p-2 border border-gray-100">
-            <div class="flex flex-col lg:flex-row items-stretch">
-
-              <!-- Champ Pickup -->
-              <div class="flex-1 relative">
-                <div class="p-6">
-                  <!-- Label avec icône -->
-                  <div class="flex items-center mb-3">
-                    <div class="w-6 h-6 mr-3 flex items-center justify-center">
-                      <div class="w-4 h-4 bg-red-500 rounded-full relative">
-                        <div class="absolute -top-1 left-1/2 transform -translate-x-1/2">
-                          <svg class="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2L12 22M5 9L12 2L19 9"/>
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                    <label class="text-sm font-bold text-red-500 uppercase tracking-wide">
-                      Pick up from
-                    </label>
-                  </div>
-
-                  <!-- Input avec placeholder amélioré -->
-                  <AddressAutocomplete
-                    ref="pickupRef"
-                    v-model="pickupAddress"
-                    type="pickup"
-                    placeholder="Start typing an address..."
-                    :user-location="userLocation"
-                    class="w-full text-lg font-medium text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                    @address-selected="handlePickupSelected"
-                    @focus="handlePickupFocus"
-                    @blur="handlePickupBlur"
-                  />
-                </div>
-
-                <!-- Indicateur de sélection -->
-                <div v-if="selectedPickup" class="absolute top-2 right-2">
-                  <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-
-              <!-- Séparateur vertical -->
-              <div class="hidden lg:block w-px bg-gray-200 my-4"></div>
-
-              <!-- Séparateur horizontal sur mobile -->
-              <div class="lg:hidden h-px bg-gray-200 mx-6"></div>
-
-              <!-- Champ Destination -->
-              <div class="flex-1 relative">
-                <div class="p-6">
-                  <!-- Label avec icône -->
-                  <div class="flex items-center mb-3">
-                    <div class="w-6 h-6 mr-3 flex items-center justify-center">
-                      <div class="w-4 h-4 bg-red-500 rounded-full relative">
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-2 h-2 bg-white rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <label class="text-sm font-bold text-red-500 uppercase tracking-wide">
-                      Move to
-                    </label>
-                  </div>
-
-                  <!-- Input -->
-                  <AddressAutocomplete
-                    ref="destinationRef"
-                    v-model="destinationAddress"
-                    type="destination"
-                    placeholder="Enter destination address..."
-                    :user-location="userLocation"
-                    class="w-full text-lg font-medium text-gray-800 placeholder:text-gray-400 bg-transparent border-none focus:outline-none focus:ring-0"
-                    @address-selected="handleDestinationSelected"
-                    @focus="handleDestinationFocus"
-                    @blur="handleDestinationBlur"
-                  />
-                </div>
-
-                <!-- Indicateur de sélection -->
-                <div v-if="selectedDestination" class="absolute top-2 right-2">
-                  <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-              </div>
-
-              <!-- Bouton See Prices -->
-              <div class="flex items-stretch lg:w-auto w-full p-2">
-                <button
-                  @click="scrollToVehicles"
-                  :disabled="!canCalculatePrice || isCalculatingRoute"
-                  class="flex-1 lg:flex-none lg:px-8 lg:py-6 px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-105 disabled:transform-none shadow-lg group relative overflow-hidden"
-                >
-                  <!-- Loading overlay -->
-                  <div
-                    v-if="isCalculatingRoute"
-                    class="absolute inset-0 bg-red-700 flex items-center justify-center"
-                  >
-                    <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span>Loading...</span>
-                  </div>
-
-                  <!-- Contenu du bouton -->
-                  <div :class="{ 'opacity-0': isCalculatingRoute }" class="flex items-center justify-center">
-                    <svg class="w-5 h-5 mr-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                    </svg>
-                    <span class="whitespace-nowrap">See Prices</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Indicateurs de statut minimalistes -->
-          <div class="flex items-center justify-center mt-4 space-x-8">
-            <div class="flex items-center space-x-2">
-              <div class="w-2 h-2 rounded-full transition-colors duration-300" :class="selectedPickup ? 'bg-green-500' : 'bg-gray-300'"></div>
-              <span class="text-sm font-medium text-white drop-shadow-md">Pickup</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <div class="w-2 h-2 rounded-full transition-colors duration-300" :class="selectedDestination ? 'bg-green-500' : 'bg-gray-300'"></div>
-              <span class="text-sm font-medium text-white drop-shadow-md">Destination</span>
-            </div>
-          </div>
-
-          <!-- Actions rapides -->
-          <div v-if="selectedPickup || selectedDestination" class="flex items-center justify-center mt-4 space-x-4">
-            <button
-              v-if="selectedPickup && selectedDestination"
-              @click="swapAddresses"
-              class="flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all text-sm font-medium text-gray-700 hover:text-red-600"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-              </svg>
-              <span>Swap</span>
-            </button>
-
-            <button
-              @click="clearAllAddresses"
-              class="flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-md hover:shadow-lg transition-all text-sm font-medium text-gray-700 hover:text-red-600"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-              <span>Clear</span>
-            </button>
-          </div>
-        </div>
+            <AddressSearchForm
+              submit-text="See Prices"
+              mode="emit"
+              :show-progress="true"
+              :show-quick-actions="true"
+              :initial-pickup="initialPickup"
+              :initial-destination="initialDestination"
+              :user-location="userLocation"
+              @submit="handleFormSubmit"
+              @pickup-selected="handlePickupSelected"
+              @destination-selected="handleDestinationSelected"
+            />
       </div>
 
       <!-- Informations de route flottantes -->
@@ -223,9 +82,8 @@
       </div>
     </section>
 
-    <!-- Sections suivantes (véhicules, prix, etc.) restent identiques -->
     <!-- Vehicle Selection Section -->
-    <section v-if="canCalculatePrice" ref="vehicleSection" class="py-16 bg-white">
+    <section v-if="canCalculateRoute" ref="vehicleSection" class="py-16 bg-white">
       <div class="container mx-auto px-4">
         <div class="text-center mb-12">
           <h2 class="text-3xl lg:text-4xl font-black text-gray-900 mb-4">Choose your vehicle</h2>
@@ -448,11 +306,11 @@
 </template>
 
 <script setup lang="ts">
-// Le script reste identique à votre version précédente
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import toastService from '@/services/toast.service';
+import { useRoute } from 'vue-router';
+import { useAddressSearch } from '@/composables/useAddressSearch';
 import type { PlaceResult, RouteResult, Location } from '@/types/address.types';
+import toastService from '@/services/toast.service';
 
 // Import images
 import pickupImage from '@/assets/images/illustrations/pickup_truck.svg';
@@ -461,32 +319,52 @@ import xlImage from '@/assets/images/illustrations/xl_truck.svg';
 import boxImage from '@/assets/images/illustrations/box_truck.svg';
 
 // Import components
-import AddressAutocomplete from './components/AddressAutocomplete.vue';
+import AddressSearchForm from '@/components/shared/AddressSearchForm.vue';
 import HereMap from './components/HereMap.vue';
 
 // HERE Maps API Key
 const hereApiKey = import.meta.env.VITE_HERE_API_KEY || process.env.VUE_APP_HERE_API_KEY || '';
 
-// Router
+// Route
 const route = useRoute();
-const router = useRouter();
+
+// Use address search composable
+const {
+  pickupAddress,
+  destinationAddress,
+  selectedPickup,
+  selectedDestination,
+  userLocation,
+  canCalculateRoute,
+  handlePickupSelected: baseHandlePickupSelected,
+  handleDestinationSelected: baseHandleDestinationSelected,
+  calculateDistance,
+  formatDistance,
+  formatDuration,
+  initialize
+} = useAddressSearch({
+  initializeFromRoute: true,
+  autoGetLocation: true
+});
 
 // Refs
-const pickupRef = ref<InstanceType<typeof AddressAutocomplete> | null>(null);
-const destinationRef = ref<InstanceType<typeof AddressAutocomplete> | null>(null);
 const vehicleSection = ref<HTMLElement | null>(null);
 const mapRef = ref<InstanceType<typeof HereMap> | null>(null);
 
-// Reactive state
-const pickupAddress = ref('');
-const destinationAddress = ref('');
-const selectedPickup = ref<Location | null>(null);
-const selectedDestination = ref<Location | null>(null);
+// State
 const selectedVehicle = ref<any>(null);
-const userLocation = ref<{ lat: number; lng: number } | null>(null);
 const routeInfo = ref<RouteResult | null>(null);
 const isCalculatingRoute = ref(false);
 const estimatedTime = ref(45);
+
+// Initial values from route
+const initialPickup = computed(() => {
+  return (route.query.pickup as string) || '';
+});
+
+const initialDestination = computed(() => {
+  return (route.query.destination as string) || '';
+});
 
 // Vehicle definitions
 const vehicles = ref({
@@ -524,84 +402,27 @@ const vehicles = ref({
   }
 });
 
-// Computed
-const canCalculatePrice = computed(() => {
-  return selectedPickup.value && selectedDestination.value;
-});
-
-// Lifecycle et méthodes (gardez toutes vos méthodes existantes)
-onMounted(() => {
-  initializeFromQuery();
-  getCurrentLocation();
-});
-
-// Ajoutez toutes vos méthodes existantes ici...
-const initializeFromQuery = () => {
-  if (route.query.pickup && typeof route.query.pickup === 'string') {
-    pickupAddress.value = route.query.pickup;
-  }
-  if (route.query.dropoff && typeof route.query.dropoff === 'string') {
-    destinationAddress.value = route.query.dropoff;
+// Methods
+const handleFormSubmit = (data: { pickup: Location | null; destination: Location | null }) => {
+  if (data.pickup && data.destination) {
+    scrollToVehicles();
   }
 };
-
-const getCurrentLocation = async () => {
-  try {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          userLocation.value = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-        },
-        () => {
-          userLocation.value = { lat: 45.5017, lng: -73.5673 };
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000
-        }
-      );
-    }
-  } catch (error) {
-    console.warn('Failed to get user location:', error);
-  }
-};
-
-const handlePickupFocus = () => {};
-const handlePickupBlur = () => {};
-const handleDestinationFocus = () => {};
-const handleDestinationBlur = () => {};
 
 const handlePickupSelected = (address: PlaceResult) => {
-  selectedPickup.value = {
-    lat: address.position.lat,
-    lng: address.position.lng,
-    address: address.address.label
-  };
+  baseHandlePickupSelected(address);
 
   nextTick(() => {
-    if (!destinationAddress.value && destinationRef.value) {
-      setTimeout(() => {
-        destinationRef.value?.focus();
-      }, 300);
-    }
+    // Focus on destination if not filled
+    // Auto-handled by the form component
   });
-
-  toastService.success(`Pickup location set: ${address.address.city || 'Selected'}`);
 };
 
 const handleDestinationSelected = (address: PlaceResult) => {
-  selectedDestination.value = {
-    lat: address.position.lat,
-    lng: address.position.lng,
-    address: address.address.label
-  };
-
-  toastService.success(`Destination set: ${address.address.city || 'Selected'}`);
+  baseHandleDestinationSelected(address);
 };
+
+
 
 const calculateRoute = async () => {
   if (!selectedPickup.value || !selectedDestination.value) return;
@@ -611,23 +432,17 @@ const calculateRoute = async () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const R = 6371;
-    const dLat = (selectedDestination.value.lat - selectedPickup.value.lat) * Math.PI / 180;
-    const dLng = (selectedDestination.value.lng - selectedPickup.value.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(selectedPickup.value.lat * Math.PI / 180) * Math.cos(selectedDestination.value.lat * Math.PI / 180) *
-      Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    const distance = R * c * 1000;
+    const distance = calculateDistance(selectedPickup.value, selectedDestination.value) * 1000; // Convert to meters
+    const duration = Math.round(distance / 1000 * 120);
 
     routeInfo.value = {
       summary: {
-        duration: Math.round(distance / 1000 * 120),
+        duration: duration,
         length: Math.round(distance)
       }
     };
 
-    toastService.success(`Route calculated: ${formatDistance(distance)} • ${formatDuration(Math.round(distance / 1000 * 120))}`);
+    toastService.success(`Route calculated: ${formatDistance(distance)} • ${formatDuration(duration)}`);
 
   } catch (error) {
     console.error('Route calculation failed:', error);
@@ -637,6 +452,7 @@ const calculateRoute = async () => {
   }
 };
 
+// Watch for location changes
 watch([selectedPickup, selectedDestination], () => {
   if (selectedPickup.value && selectedDestination.value) {
     calculateRoute();
@@ -645,46 +461,12 @@ watch([selectedPickup, selectedDestination], () => {
   }
 }, { deep: true });
 
-const centerOnUserLocation = () => {
-  toastService.success('Centered on your location');
-};
 
-const clearAllAddresses = () => {
-  pickupAddress.value = '';
-  destinationAddress.value = '';
-  selectedPickup.value = null;
-  selectedDestination.value = null;
-  routeInfo.value = null;
-  toastService.success('All addresses cleared');
-};
-
-const swapAddresses = () => {
-  if (selectedPickup.value && selectedDestination.value) {
-    const tempPickup = selectedPickup.value;
-    const tempPickupAddress = pickupAddress.value;
-
-    selectedPickup.value = selectedDestination.value;
-    pickupAddress.value = destinationAddress.value;
-
-    selectedDestination.value = tempPickup;
-    destinationAddress.value = tempPickupAddress;
-
-    toastService.success('Addresses swapped');
-  }
-};
 
 const scrollToVehicles = () => {
-  if (!canCalculatePrice.value) {
-    if (!selectedPickup.value) {
-      pickupRef.value?.focus();
-      toastService.warning('Please select a pickup address');
-      return;
-    }
-    if (!selectedDestination.value) {
-      destinationRef.value?.focus();
-      toastService.warning('Please select a destination address');
-      return;
-    }
+  if (!canCalculateRoute.value) {
+    toastService.warning('Please select both pickup and destination addresses');
+    return;
   }
 
   nextTick(() => {
@@ -736,23 +518,6 @@ const getTotalPrice = (): number => {
   return selectedVehicle.value.basePrice + getMileageCost() + getLaborCost() + getServiceFee();
 };
 
-const formatDistance = (meters: number): string => {
-  if (meters < 1000) {
-    return `${Math.round(meters)}m`;
-  }
-  return `${(meters / 1000).toFixed(1)}km`;
-};
-
-const formatDuration = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}min`;
-  }
-  return `${minutes}min`;
-};
-
 const proceedToBooking = () => {
   if (!selectedVehicle.value || !selectedPickup.value || !selectedDestination.value) {
     toastService.warning('Please complete all selections');
@@ -769,6 +534,11 @@ const proceedToBooking = () => {
     estimatedTime: estimatedTime.value
   });
 };
+
+// Lifecycle
+onMounted(() => {
+  initialize();
+});
 </script>
 
 <style scoped>
